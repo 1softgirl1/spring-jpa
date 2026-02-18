@@ -1,0 +1,24 @@
+info:
+  name: put
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/users/2"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "user@example.com",
+        "firstName": "string",
+        "lastName": "string",
+        "active": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

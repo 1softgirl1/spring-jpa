@@ -1,0 +1,4 @@
+2026-02-18 21:35:05.454177+07:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Значение слишком длинное для поля "PRICE BINARY VARYING(255)": "X'aced0005737200146a6176612e6d6174682e426967446563696d616c54c71557f981284f030002... (292)"
+Value too long for column "PRICE BINARY VARYING(255)": "X'aced0005737200146a6176612e6d6174682e426967446563696d616c54c71557f981284f030002... (292)"; SQL statement:
+insert into dish (description,is_available,name,price,id) values (?,?,?,?,default) [22001-224]

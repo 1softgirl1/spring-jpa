@@ -1,0 +1,24 @@
+info:
+  name: post1
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dishes"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Pizza 4 cheesee",
+        "description": "Classic pizza with tomato sauce and mozzarella",
+        "price": 499,
+        "isAvailable": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
