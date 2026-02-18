@@ -31,5 +31,4 @@ class DishService(
 
     fun delete(id: Long) =
         repository.deleteById(id)
-
 }
