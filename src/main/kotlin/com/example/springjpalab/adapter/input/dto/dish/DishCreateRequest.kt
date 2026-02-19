@@ -16,7 +16,6 @@ data class DishCreateRequest(
 
     @field:NotNull(message = "Price cannot be null")
     @field:DecimalMin(value = "0.01", message = "Price must be greater than 0")
-    @field:DecimalMax(value = "499.0", message = "Price must be less than 499")
     val price: Number,
 
     @field:NotNull(message = "Availability must be specified")
