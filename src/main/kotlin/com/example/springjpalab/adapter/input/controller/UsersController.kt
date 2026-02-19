@@ -43,7 +43,7 @@ class UsersController (
             return ResponseEntity.badRequest().body(
                 ErrorResponse(
                     status = 400,
-                    error = "Validation Failed",
+                    error = "Not Found",
                     message = message
                 )
             )
