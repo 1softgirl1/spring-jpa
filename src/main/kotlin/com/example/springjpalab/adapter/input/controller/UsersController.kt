@@ -31,24 +31,8 @@ class UsersController (
     }
 
     @PostMapping
-    fun createUser(@Valid @RequestBody request: UserCreateRequest,
-                   bindingResult: BindingResult
+    fun createUser(@Valid @RequestBody request: UserCreateRequest
     ): ResponseEntity<Any> {
-
-        if (bindingResult.hasErrors()) {
-
-            val message = bindingResult.fieldErrors
-                .joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
-
-            return ResponseEntity.badRequest().body(
-                ErrorResponse(
-                    status = 400,
-                    error = "Not Found",
-                    message = message
-                )
-            )
-        }
-
 
         val existingUser = userService.findByEmail(request.email)
 
