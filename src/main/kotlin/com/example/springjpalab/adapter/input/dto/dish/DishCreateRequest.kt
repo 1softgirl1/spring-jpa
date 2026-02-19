@@ -1,13 +1,9 @@
-package com.example.springjpalab.adapter.input.dto
+package com.example.springjpalab.adapter.input.dto.dish
 
-import jakarta.validation.constraints.DecimalMax
-import jakarta.validation.constraints.DecimalMin
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.*
 
+data class DishCreateRequest(
 
-data class DishUpdateRequest(
     @field:NotBlank(message = "Name cannot be blank")
     @field:Size(min = 1, message = "Name must be at least 1 character")
     val name: String,

@@ -1,10 +1,10 @@
 package com.example.springjpalab.adapter.input.controller
 
-import com.example.springjpalab.adapter.input.dto.DishCreateRequest
-import com.example.springjpalab.adapter.input.dto.DishResponse
+import com.example.springjpalab.adapter.input.dto.dish.DishCreateRequest
+import com.example.springjpalab.adapter.input.dto.dish.DishResponse
 import com.example.springjpalab.adapter.input.dto.ErrorResponse
 
-import com.example.springjpalab.adapter.input.dto.DishUpdateRequest
+import com.example.springjpalab.adapter.input.dto.dish.DishUpdateRequest
 
 import com.example.springjpalab.application.service.DishService
 

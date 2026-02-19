@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.input.dto
+package com.example.springjpalab.adapter.input.dto.user
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
