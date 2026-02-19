@@ -15,6 +15,9 @@ class DishService(
     fun findByNamePart(namePart: String):  List<Dish?>?  =
         repository.findByNamePart(namePart)
 
+    fun findAll(): List<Dish> {
+        return repository.findAll()
+    }
 
     fun findById(id: Long): Dish? =
         repository.findById(id)

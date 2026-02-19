@@ -39,6 +39,10 @@ class DishJpaAdapter(
     override fun findById(id: Long): Dish? =
         repository.findById(id).orElse(null)?.toDomain()
 
+    override fun findAll(): List<Dish> {
+        return repository.findAll().map { it.toDomain() }
+    }
+
     override fun deleteById(id: Long) =
         repository.deleteById(id)
 

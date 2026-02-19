@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
@@ -29,9 +30,16 @@ class DishesController(
     private val dishService: DishService
 ) {
     @GetMapping
-    fun getDishesByNamePart(namePart: String): ResponseEntity<Any> {
-        val dishesList = dishService.findByNamePart(namePart)
-        return ResponseEntity.ok(dishesList)
+    fun getDishesByNamePart(
+        @RequestParam(required = false) namePart: String?
+    ): ResponseEntity<Any> {
+
+        return if (namePart.isNullOrBlank()) {
+            ResponseEntity.ok(dishService.findAll())
+        } else {
+            ResponseEntity.ok(dishService.findByNamePart(namePart))
+        }
+
     }
 
     @PostMapping

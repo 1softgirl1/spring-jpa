@@ -22,6 +22,10 @@ class InMemoryDishesRepository: DishRepositoryPort {
         }
     }
 
+    override fun findAll(): List<Dish> {
+        return dishes.values.toList()
+    }
+
     override fun findById(id: Long) : Dish? {
         return dishes[id]
     }
