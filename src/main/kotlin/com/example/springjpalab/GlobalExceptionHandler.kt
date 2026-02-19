@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.input
+package com.example.springjpalab
 
 import com.example.springjpalab.adapter.input.dto.ErrorResponse
 import org.springframework.http.ResponseEntity
@@ -19,7 +19,7 @@ class GlobalExceptionHandler {
 
         val response = ErrorResponse(
             status = 400,
-            error = "Not Found",
+            error = "Bad Request",
             message = message
         )
 
