@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.output.persistence.mock
+package com.example.springjpalab.adapter.output.mock
 
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.model.Dish
@@ -20,6 +20,10 @@ class InMemoryDishesRepository: DishRepositoryPort {
         return dishes.values.filter { it.name.contains(namePart)
             it.name.contains(namePart, ignoreCase = true)
         }
+    }
+
+    override fun findAll(): List<Dish> {
+        return dishes.values.toList()
     }
 
     override fun findById(id: Long) : Dish? {

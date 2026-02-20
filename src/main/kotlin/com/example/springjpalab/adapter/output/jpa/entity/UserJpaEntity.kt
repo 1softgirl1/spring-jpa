@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.output.persistence.jpa.entity
+package com.example.springjpalab.adapter.output.jpa.entity
 
 import jakarta.persistence.*
 

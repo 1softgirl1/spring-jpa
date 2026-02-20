@@ -1,7 +1,6 @@
 package com.example.springjpalab.application.service
 
 import com.example.springjpalab.domain.model.Dish
-import com.example.springjpalab.adapter.output.persistence.mock.InMemoryDishesRepository
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import org.springframework.stereotype.Service
 
@@ -15,6 +14,9 @@ class DishService(
     fun findByNamePart(namePart: String):  List<Dish?>?  =
         repository.findByNamePart(namePart)
 
+    fun findAll(): List<Dish> {
+        return repository.findAll()
+    }
 
     fun findById(id: Long): Dish? =
         repository.findById(id)
@@ -31,5 +33,4 @@ class DishService(
 
     fun delete(id: Long) =
         repository.deleteById(id)
-
 }

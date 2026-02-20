@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.input.dto
+package com.example.springjpalab.adapter.input.dto.error
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

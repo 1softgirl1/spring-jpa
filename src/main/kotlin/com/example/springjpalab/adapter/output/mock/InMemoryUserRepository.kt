@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.output.persistence.mock
+package com.example.springjpalab.adapter.output.mock
 
 import com.example.springjpalab.domain.port.UserRepositoryPort
 import com.example.springjpalab.domain.model.User

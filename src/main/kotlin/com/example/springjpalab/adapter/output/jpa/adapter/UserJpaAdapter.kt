@@ -1,7 +1,7 @@
-package com.example.springjpalab.adapter.output.persistence.jpa.adapter
+package com.example.springjpalab.adapter.output.jpa.adapter
 
-import com.example.springjpalab.adapter.output.persistence.jpa.entity.UserJpaEntity
-import com.example.springjpalab.adapter.output.persistence.jpa.repository.UserJpaRepository
+import com.example.springjpalab.adapter.output.jpa.entity.UserJpaEntity
+import com.example.springjpalab.adapter.output.jpa.repository.UserJpaRepository
 import com.example.springjpalab.domain.model.User
 import com.example.springjpalab.domain.port.UserRepositoryPort
 import org.springframework.context.annotation.Profile

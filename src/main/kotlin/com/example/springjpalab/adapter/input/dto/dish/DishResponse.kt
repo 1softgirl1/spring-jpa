@@ -1,5 +1,7 @@
-package com.example.springjpalab.adapter.input.dto
+package com.example.springjpalab.adapter.input.dto.dish
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
@@ -18,5 +20,7 @@ data class DishResponse(
     val price: Number,
 
     @field:NotNull(message = "Availability must be specified")
+    @field:JsonProperty("isAvailable")
+    @get:JsonIgnore
     val isAvailable: Boolean
 )
