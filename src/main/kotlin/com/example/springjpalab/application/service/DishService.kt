@@ -1,7 +1,6 @@
 package com.example.springjpalab.application.service
 
 import com.example.springjpalab.domain.model.Dish
-import com.example.springjpalab.adapter.output.persistence.mock.InMemoryDishesRepository
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import org.springframework.stereotype.Service
 

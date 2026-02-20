@@ -1,6 +1,6 @@
 package com.example.springjpalab
 
-import com.example.springjpalab.adapter.input.dto.ErrorResponse
+import com.example.springjpalab.adapter.input.dto.error.ErrorResponse
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.BindException

@@ -1,7 +1,7 @@
-package com.example.springjpalab.adapter.output.persistence.jpa.adapter
+package com.example.springjpalab.adapter.output.jpa.adapter
 
-import com.example.springjpalab.adapter.output.persistence.jpa.entity.DishJpaEntity
-import com.example.springjpalab.adapter.output.persistence.jpa.repository.DishJpaRepository
+import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
+import com.example.springjpalab.adapter.output.jpa.repository.DishJpaRepository
 import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import org.springframework.context.annotation.Profile

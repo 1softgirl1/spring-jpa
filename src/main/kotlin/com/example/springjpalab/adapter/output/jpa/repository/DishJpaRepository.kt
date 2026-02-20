@@ -1,7 +1,6 @@
-package com.example.springjpalab.adapter.output.persistence.jpa.repository
+package com.example.springjpalab.adapter.output.jpa.repository
 
-import com.example.springjpalab.adapter.output.persistence.jpa.entity.DishJpaEntity
-import com.example.springjpalab.adapter.output.persistence.jpa.entity.UserJpaEntity
+import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

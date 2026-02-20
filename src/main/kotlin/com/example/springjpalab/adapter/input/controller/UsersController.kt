@@ -1,6 +1,6 @@
 package com.example.springjpalab.adapter.input.controller
 
-import com.example.springjpalab.adapter.input.dto.ErrorResponse
+import com.example.springjpalab.adapter.input.dto.error.ErrorResponse
 import com.example.springjpalab.adapter.input.dto.user.UserCreateRequest
 import com.example.springjpalab.adapter.input.dto.user.UserResponse
 import com.example.springjpalab.adapter.input.dto.user.UserUpdateRequest
