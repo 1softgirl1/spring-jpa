@@ -22,9 +22,9 @@ class OrderJpaEntity(
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.REMOVE])
     @JoinColumn(name = "user_id", nullable = false)
-    val user: UserJpaEntity = UserJpaEntity(),
+    var user: UserJpaEntity,
 
     @ManyToMany(cascade = [CascadeType.ALL])
     @JoinTable(
