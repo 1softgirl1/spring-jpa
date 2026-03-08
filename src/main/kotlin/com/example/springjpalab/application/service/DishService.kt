@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 class DishService(
     private val repository: DishRepositoryPort,
-    private val orderRepository: OrderRepositoryPort
+    private val orderService: OrderService
 ) {
     fun findByName(name: String): Dish? =
         repository.findByName(name)
@@ -36,14 +36,13 @@ class DishService(
     }
 
     fun delete(id: Long) {
-        val dishJpa: DishJpaEntity = repository.findEntityById(id) ?: return
+        val dishEntity: DishJpaEntity = repository.findEntityById(id) ?: return
 
-
-        dishJpa.orders.forEach { orderJpa: OrderJpaEntity ->
-            orderJpa.dishes.remove(dishJpa)
-            orderRepository.update(orderJpa.toDomain())
+        val ordersToUpdate: List<OrderJpaEntity> = dishEntity.orders.toList()
+        for (orderJpa in ordersToUpdate) {
+            orderJpa.dishes.remove(dishEntity)
+            orderService.update(orderJpa.id, orderJpa.toDomain())
         }
-
 
         repository.deleteById(id)
     }

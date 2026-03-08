@@ -4,9 +4,8 @@ CREATE TABLE order_dishes
     order_id BIGINT NOT NULL,
 
     CONSTRAINT fk_orddis_dish
-        FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE;,
+        FOREIGN KEY (dish_id) REFERENCES dishes(id),
 
     CONSTRAINT fk_orddis_order
-        FOREIGN KEY (order_id) REFERENCES orders(id),
-
+        FOREIGN KEY (order_id) REFERENCES orders(id)
 );
