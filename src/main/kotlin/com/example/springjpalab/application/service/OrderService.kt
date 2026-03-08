@@ -1,5 +1,6 @@
 package com.example.springjpalab.application.service
 
+import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
 import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.domain.model.Order
 import com.example.springjpalab.domain.port.OrderRepositoryPort
@@ -37,6 +38,9 @@ class OrderService (
 
         val updOrd = order.copy(id = id)
         return repository.update(updOrd)
+    }
+    fun findEntityById(id: Long): OrderJpaEntity? {
+        return repository.findEntityById(id)
     }
 
 }

@@ -44,7 +44,7 @@ class DishService(
             orderRepository.update(orderJpa.toDomain())
         }
 
-        // Удаляем само блюдо
+
         repository.deleteById(id)
     }
 }
