@@ -80,6 +80,16 @@ class OrderController (
                 ErrorResponse(400, "Validation error", "User not found with id ${request.userId}")
             )
 
+        if (request.dishIds.isEmpty()) {
+            return ResponseEntity.status(400).body(
+                ErrorResponse(
+                    400,
+                    "Validation error",
+                    "dishIds cannot be empty"
+                )
+            )
+        }
+
 
         val dishes = request.dishIds.mapNotNull { dishId ->
             dishService.findById(dishId)
