@@ -77,13 +77,11 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.7.6</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -137,14 +135,10 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.7.2</version>
+                        <version>42.7.6</version>
                     </dependency>
                     <!-- И модуль для PostgreSQL для Flyway 10+ -->
-                    <dependency>
-                        <groupId>org.flywaydb</groupId>
-                        <artifactId>flyway-database-postgresql</artifactId>
-                        <version>12.0.2</version>
-                    </dependency>
+
                 </dependencies>
             </plugin>
 
