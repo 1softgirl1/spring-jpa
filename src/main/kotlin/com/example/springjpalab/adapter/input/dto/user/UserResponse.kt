@@ -14,5 +14,5 @@ data class UserResponse (
     val lastName: String,
 
     @field:NotNull(message = "Active cannot be null or empty")
-    val active: Boolean
+    val isActive: Boolean
 )

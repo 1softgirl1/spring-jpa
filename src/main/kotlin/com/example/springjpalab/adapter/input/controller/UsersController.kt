@@ -43,7 +43,7 @@ class UsersController (
                     email = existingUser.email,
                     firstName = existingUser.firstName,
                     lastName = existingUser.lastName,
-                    active = existingUser.isActive
+                    isActive = existingUser.isActive
                 )
             )
         } else {
@@ -62,7 +62,7 @@ class UsersController (
                     email = saved.email,
                     firstName = saved.firstName,
                     lastName = saved.lastName,
-                    active = saved.isActive
+                    isActive = saved.isActive
                 )
             )
         }
