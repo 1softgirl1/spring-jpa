@@ -1,14 +1,15 @@
 package com.example.springjpalab.adapter.input.controller
 
-import com.example.springjpalab.adapter.input.dto.ErrorResponse
-import com.example.springjpalab.adapter.input.dto.UserCreateRequest
-import com.example.springjpalab.adapter.input.dto.UserResponse
-import com.example.springjpalab.adapter.input.dto.UserUpdateRequest
+import com.example.springjpalab.adapter.input.dto.error.ErrorResponse
+import com.example.springjpalab.adapter.input.dto.user.UserCreateRequest
+import com.example.springjpalab.adapter.input.dto.user.UserResponse
+import com.example.springjpalab.adapter.input.dto.user.UserUpdateRequest
 import com.example.springjpalab.application.service.UserService
 import com.example.springjpalab.domain.model.User
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,7 +31,8 @@ class UsersController (
     }
 
     @PostMapping
-    fun createUser(@Valid @RequestBody request: UserCreateRequest): ResponseEntity<UserResponse> {
+    fun createUser(@Valid @RequestBody request: UserCreateRequest
+    ): ResponseEntity<Any> {
 
         val existingUser = userService.findByEmail(request.email)
 
@@ -41,7 +43,7 @@ class UsersController (
                     email = existingUser.email,
                     firstName = existingUser.firstName,
                     lastName = existingUser.lastName,
-                    active = existingUser.isActive
+                    isActive = existingUser.isActive
                 )
             )
         } else {
@@ -50,7 +52,7 @@ class UsersController (
                 email = request.email,
                 firstName = request.firstName,
                 lastName = request.lastName,
-                isActive = request.active
+                isActive = request.isActive
             )
             val saved = userService.create(user)
 
@@ -60,7 +62,7 @@ class UsersController (
                     email = saved.email,
                     firstName = saved.firstName,
                     lastName = saved.lastName,
-                    active = saved.isActive
+                    isActive = saved.isActive
                 )
             )
         }
@@ -100,7 +102,7 @@ class UsersController (
                 email = request.email,
                 firstName = request.firstName,
                 lastName = request.lastName,
-                isActive = request.active
+                isActive = request.isActive
             )
             val updatedUser = userService.update(id, updatedUserEntity)
 
