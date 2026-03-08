@@ -1,4 +1,4 @@
-name: Spring Boot CI
+name: Spring boot CI
 
 on:
   pull_request:
@@ -9,21 +9,6 @@ on:
 jobs:
   check-tasks:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: testdb
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U testuser -d testdb"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -38,28 +23,17 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Grant scripts permission
+      - name: Grant scripts permition
         run: chmod +x ./mvnw ./.test/run-test.sh
 
       - name: Load .env
         run: cat .env >> "$GITHUB_ENV"
-
-      - name: Set DB env
-        run: |
-          echo "SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/testdb" >> $GITHUB_ENV
-          echo "SPRING_DATASOURCE_USERNAME=testuser" >> $GITHUB_ENV
-          echo "SPRING_DATASOURCE_PASSWORD=testpass" >> $GITHUB_ENV
-          echo "SERVER_PORT=8080" >> $GITHUB_ENV
 
       - name: Compile Spring app
         run: ./mvnw clean package
 
       - name: Run Spring app
         run: java -jar ./target/*.jar --server.port=${{ env.SERVER_PORT }} &
-        env:
-          SPRING_DATASOURCE_URL: ${{ env.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ env.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ env.SPRING_DATASOURCE_PASSWORD }}
 
       - name: Run tests
         run: ./.test/run-test.sh
