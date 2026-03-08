@@ -21,6 +21,7 @@ data class UserJpaEntity (
     @Column(nullable = false)
     val isActive: Boolean = true,
 
-
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.REMOVE], orphanRemoval = true)
+    var orders: MutableList<OrderJpaEntity> = mutableListOf()
 
 )
