@@ -25,7 +25,10 @@ class DishJpaEntity(
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
-    val restaurant: RestaurantJpaEntity = RestaurantJpaEntity() // дефолтное значение
+    val restaurant: RestaurantJpaEntity = RestaurantJpaEntity(),
+
+    @ManyToMany(mappedBy = "dishes")
+    var orders: MutableList<OrderJpaEntity> = mutableListOf()
 ) {
     fun toDomain(): Dish {
         return Dish(

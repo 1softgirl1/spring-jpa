@@ -1,12 +1,16 @@
 package com.example.springjpalab.application.service
 
+import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
+import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
 import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.port.DishRepositoryPort
+import com.example.springjpalab.domain.port.OrderRepositoryPort
 import org.springframework.stereotype.Service
 
 @Service
 class DishService(
-    private val repository: DishRepositoryPort
+    private val repository: DishRepositoryPort,
+    private val orderRepository: OrderRepositoryPort
 ) {
     fun findByName(name: String): Dish? =
         repository.findByName(name)
@@ -31,6 +35,17 @@ class DishService(
         return repository.update(updated)
     }
 
-    fun delete(id: Long) =
+    fun delete(id: Long) {
+        val dishJpa: DishJpaEntity = repository.findEntityById(id) ?: return
+
+
+        dishJpa.orders.forEach { orderJpa: OrderJpaEntity ->
+            orderJpa.dishes.remove(dishJpa)
+            orderRepository.update(orderJpa.toDomain())
+        }
+
+        // Удаляем само блюдо
         repository.deleteById(id)
+    }
 }
+
