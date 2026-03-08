@@ -30,6 +30,9 @@ class OrderJpaAdapter (
         val entity = repository.findById(id).orElse(null)
         return entity?.toDomain()
     }
+    override fun findEntityById(id: Long): OrderJpaEntity? =
+        repository.findById(id).orElse(null)
+
 
     override fun findByUserId(userId: Long): List<Order> =
         repository.findByUserId(userId).map { it.toDomain() }

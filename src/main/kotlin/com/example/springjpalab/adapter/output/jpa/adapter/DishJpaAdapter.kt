@@ -24,6 +24,9 @@ class DishJpaAdapter(
     override fun findByName(name: String): Dish? =
         repository.findByName(name)?.toDomain()
 
+    override fun findEntityById(id: Long): DishJpaEntity? =
+        repository.findById(id).orElse(null)
+
     override fun findByNamePart(namePart: String): List<Dish?>? =
         repository.findByNamePart(namePart)?.map { it.toDomain() }
 
