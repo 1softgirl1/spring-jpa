@@ -1,5 +1,6 @@
 package com.example.springjpalab.domain.model
 
+import com.example.springjpalab.adapter.output.jpa.entity.RestaurantJpaEntity
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal
@@ -12,5 +13,7 @@ data class Dish(
 
     @field:JsonProperty("isAvailable")
     @get:JsonIgnore
-    val isAvailable: Boolean
+    val isAvailable: Boolean,
+
+    val restaurantId: Long
 )

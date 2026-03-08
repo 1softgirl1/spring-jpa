@@ -22,5 +22,8 @@ data class DishResponse(
     @field:NotNull(message = "Availability must be specified")
     @field:JsonProperty("isAvailable")
     @get:JsonIgnore
-    val isAvailable: Boolean
+    val isAvailable: Boolean,
+
+    @field:NotNull(message = "restaurantId cannot be null")
+    val restaurantId: Long
 )

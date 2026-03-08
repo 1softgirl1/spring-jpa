@@ -1,0 +1,27 @@
+package com.example.springjpalab.application.service
+
+import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.port.OrderRepositoryPort
+import org.springframework.stereotype.Service
+
+@Service
+class OrderService (
+    private val repository: OrderRepositoryPort
+) {
+    fun findAll(): List<Order> = repository.findAll()
+    fun findById(id: Long): Order? = repository.findById(id)
+    fun findByUserId(userId: Long): List<Order>? = repository.findByUserId(userId)
+    fun findByStatus(status: OrderStatus): List<Order>? = repository.findByStatus(status)
+    fun findByUserIdAndStatus(userId: Long, status: OrderStatus): List<Order>?
+            = repository.findByUserIdAndStatus(userId, status)
+    fun create(order: Order): Order {
+        val newOrd = order.copy(id = 0)
+        return repository.create(newOrd)
+    }
+    fun update(id: Long, order: Order): Order {
+        val updOrd = order.copy(id = id)
+        return repository.update(updOrd)
+    }
+
+}

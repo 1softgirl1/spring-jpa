@@ -1,10 +1,11 @@
 package com.example.springjpalab.adapter.input.dto.dish
 
+import com.example.springjpalab.domain.model.Dish
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.*
 
-data class DishCreateRequest(
+data class DishCreateRequest (
 
     @field:NotBlank(message = "Name cannot be blank")
     @field:Size(min = 1, message = "Name must be at least 1 character")
@@ -21,5 +22,9 @@ data class DishCreateRequest(
     @field:NotNull(message = "Availability must be specified")
     @field:JsonProperty("isAvailable")
     @get:JsonIgnore
-    val isAvailable: Boolean
+    val isAvailable: Boolean,
+
+    @field:NotNull(message = "restaurantId cannot be null")
+    val restaurantId: Long
+
 )

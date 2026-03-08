@@ -42,43 +42,6 @@ class DishesController(
 
     }
 
-    @PostMapping
-    fun createDish(@Valid @RequestBody request: DishCreateRequest): ResponseEntity<DishResponse> {
-
-        val existingDish = dishService.findByName(request.name)
-
-        return if (existingDish != null) {
-            ResponseEntity.ok(
-                DishResponse(
-                    id = existingDish.id,
-                    name = existingDish.name,
-                    description = existingDish.description,
-                    price = existingDish.price,
-                    isAvailable = existingDish.isAvailable
-                )
-            )
-        } else {
-            val dish = Dish(
-                id = 0,
-                name = request.name,
-                description = request.description,
-                price = BigDecimal.valueOf(request.price.toDouble()),
-                isAvailable = request.isAvailable
-            )
-            val saved = dishService.create(dish)
-
-            ResponseEntity.status(201).body(
-                DishResponse(
-                    id = saved.id,
-                    name = saved.name,
-                    description = saved.description,
-                    price = saved.price,
-                    isAvailable = saved.isAvailable
-                )
-            )
-        }
-    }
-
     @GetMapping("/{id}")
     fun getDishById(@PathVariable(required = true) id: Long): ResponseEntity<Any> {
         val dish = dishService.findById(id)
@@ -88,7 +51,8 @@ class DishesController(
                 dish.name,
                 dish.description,
                 dish.price,
-                dish.isAvailable))
+                dish.isAvailable,
+                dish.restaurantId))
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 ErrorResponse(
@@ -123,7 +87,8 @@ class DishesController(
                     updatedDish.name,
                     updatedDish.description,
                     updatedDish.price,
-                    updatedDish.isAvailable
+                    updatedDish.isAvailable,
+                    updatedDish.restaurantId
                 )
             )
         }
