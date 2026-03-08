@@ -52,7 +52,7 @@ class UsersController (
                 email = request.email,
                 firstName = request.firstName,
                 lastName = request.lastName,
-                isActive = request.active
+                isActive = request.isActive
             )
             val saved = userService.create(user)
 
@@ -102,7 +102,7 @@ class UsersController (
                 email = request.email,
                 firstName = request.firstName,
                 lastName = request.lastName,
-                isActive = request.active
+                isActive = request.isActive
             )
             val updatedUser = userService.update(id, updatedUserEntity)
 
