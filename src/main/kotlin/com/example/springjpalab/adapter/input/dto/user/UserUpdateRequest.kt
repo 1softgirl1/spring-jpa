@@ -1,5 +1,6 @@
 package com.example.springjpalab.adapter.input.dto.user
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -19,5 +20,6 @@ data class UserUpdateRequest(
     val lastName: String,
 
     @field:NotNull(message = "Active cannot be null or empty")
+    @JsonProperty("isActive")
     val isActive: Boolean
 )

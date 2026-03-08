@@ -1,5 +1,6 @@
 package com.example.springjpalab.adapter.input.dto.user
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
@@ -17,5 +18,7 @@ data class UserCreateRequest(
     @field:Size(min = 1, message = "LastName must be at least 1 character")
     val lastName: String,
 
+    @JsonProperty("isActive")
+    @field:NotBlank(message = "isActive cannot be blank")
     val isActive: Boolean = true,
 )
