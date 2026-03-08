@@ -160,14 +160,21 @@ class OrderController (
         }
     }
     @PatchMapping("/{id}/status")
-    fun updateOrderStatus(@PathVariable id: Long, @Valid @RequestBody request: OrderStatusUpdateRequest) : ResponseEntity<Any>{
-        val order = orderService.findById(id)
-        return if (order != null) {
-            val updatedOrderEntity = order.copy(
-                status = request.status
+    fun updateOrderStatus(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: OrderStatusUpdateRequest
+    ): ResponseEntity<Any> {
 
+        val order = orderService.findById(id)
+            ?: return ResponseEntity.status(404).body(
+                ErrorResponse(404, "Not Found", "Order with id=$id not found")
             )
-            val updatedOrder = orderService.update(id, updatedOrderEntity)
+
+        return try {
+            val updatedOrder = orderService.update(
+                id,
+                order.copy(status = request.status)
+            )
 
             ResponseEntity.ok(
                 OrderResponse(
@@ -187,18 +194,12 @@ class OrderController (
                     }
                 )
             )
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "Order with id=${id} not found"
-                )
+
+        } catch (e: IllegalStateException) {
+            ResponseEntity.status(400).body(
+                ErrorResponse(400, "Validation error", "Invalid status transition")
             )
-
         }
-
     }
 
 

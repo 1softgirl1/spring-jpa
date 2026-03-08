@@ -20,6 +20,21 @@ class OrderService (
         return repository.create(newOrd)
     }
     fun update(id: Long, order: Order): Order {
+        val existing = repository.findById(id)
+            ?: throw IllegalArgumentException("Order not found")
+
+        val currentStatus = existing.status
+        val newStatus = order.status
+
+        val validTransition =
+            (currentStatus == OrderStatus.PENDING && newStatus == OrderStatus.CONFIRMED) ||
+                    (currentStatus == OrderStatus.CONFIRMED && newStatus == OrderStatus.DELIVERED) ||
+                    (currentStatus == newStatus)
+
+        if (!validTransition) {
+            throw IllegalStateException("Invalid status transition")
+        }
+
         val updOrd = order.copy(id = id)
         return repository.update(updOrd)
     }
