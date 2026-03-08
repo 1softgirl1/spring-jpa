@@ -18,7 +18,6 @@ data class UserCreateRequest(
     @field:Size(min = 1, message = "LastName must be at least 1 character")
     val lastName: String,
 
-    @JsonProperty("isActive")
-    @field:NotBlank(message = "isActive cannot be blank")
+
     val isActive: Boolean = true,
 )
