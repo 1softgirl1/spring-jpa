@@ -26,13 +26,13 @@ class OrderJpaEntity(
     @JoinColumn(name = "user_id", nullable = false)
     val user: UserJpaEntity = UserJpaEntity(),
 
-    @ManyToMany
+    @ManyToMany(cascade = [CascadeType.ALL])
     @JoinTable(
         name = "order_dishes",
         joinColumns = [JoinColumn(name = "order_id")],
         inverseJoinColumns = [JoinColumn(name = "dish_id")]
     )
-    val dishes: List<DishJpaEntity> = emptyList()
+    var dishes: MutableList<DishJpaEntity> = mutableListOf()
 
 ) {
 
