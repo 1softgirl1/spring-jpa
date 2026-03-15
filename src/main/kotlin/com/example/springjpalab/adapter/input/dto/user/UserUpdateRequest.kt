@@ -20,6 +20,6 @@ data class UserUpdateRequest(
     val lastName: String,
 
     @field:NotNull(message = "Active cannot be null or empty")
-    @JsonProperty("active")
+    @JsonProperty("isActive")
     val isActive: Boolean
 )
