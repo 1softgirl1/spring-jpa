@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="${BASE_URL:-http://localhost:8080}"
+BASE_URL="${BASE_URL:-http://172.31.64.1:8080}"
 CONTENT_TYPE="Content-Type: application/json"
 
 GREEN='\033[0;32m'
@@ -669,10 +669,11 @@ assert_json_field_is_object "errors"
 echo -e "${GREEN}OK${NC}"
 
 echo -n "Тест 50: POST /api/v1/restaurants (дубликат имени) -> 409... "
-call_api "POST" "/api/v1/restaurants" "$RESTAURANT_CREATE_PAYLOAD"
+call_api "POST" "/api/v1/restaurants" "{\"name\":\"${UPDATED_RESTAURANT_NAME}\",\"address\":\"ул. Тестовая, д. 1\"}"
 assert_status "409"
 assert_json_field_exists "status"
 echo -e "${GREEN}OK${NC}"
+
 
 # --- Dishes: валидация полей ---
 

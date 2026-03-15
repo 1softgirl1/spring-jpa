@@ -123,13 +123,13 @@ class RestaurantController(
 
         return ResponseEntity.ok(dishesResponse)
     }
-    @PostMapping("/{restaurantId}/dishes")
+    @PostMapping("/{id}/dishes")
     fun addDishToRestaurant(
-        @PathVariable(required = true) @Min(1) restaurantId: Long,
+        @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody request: DishCreateRequest
     ): ResponseEntity<DishResponse> {
 
-        restaurantService.findById(restaurantId)
+        restaurantService.findById(id)
 
         val dish = Dish(
             id = 0,
@@ -137,7 +137,7 @@ class RestaurantController(
             description = request.description,
             price = BigDecimal.valueOf(request.price.toDouble()),
             isAvailable = request.isAvailable,
-            restaurantId = restaurantId
+            restaurantId = id
         )
 
         val saved = dishService.create(dish)

@@ -1,13 +1,14 @@
 package com.example.springjpalab.adapter.input.dto.order
 
-import com.example.springjpalab.adapter.input.dto.dish.DishResponse
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 
-class OrderCreateRequest (
+data class OrderCreateRequest(
+    @field:NotNull(message = "userId must be specified")
+    @field:Min(value = 1, message = "userId must be greater than 0")
+    var userId: Long? = null,
 
-    @field:NotNull(message = "Id cannot be null")
-    var userId: Long,
-
-    @field:NotNull(message = "Dishes must be specified")
-    var dishIds: List<Long>
+    @field:NotEmpty(message = "dishIds cannot be empty")
+    var dishIds: List<Long> = emptyList()
 )

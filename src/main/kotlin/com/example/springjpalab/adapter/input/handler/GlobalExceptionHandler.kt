@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.util.regex.Pattern
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -75,6 +77,19 @@ class GlobalExceptionHandler {
             )
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleMethodNotSupported(e: HttpRequestMethodNotSupportedException): ResponseEntity<ErrorResponse> {
+        logger.warn(e) { "HttpRequestMethodNotSupportedException" }
+        return ResponseEntity
+            .status(HttpStatus.METHOD_NOT_ALLOWED)
+            .body(
+                ErrorResponse(
+                    status = HttpStatus.METHOD_NOT_ALLOWED.value(),
+                    message = "Метод не поддерживается"
+                )
+            )
+    }
+
 
     @ExceptionHandler(Exception::class)
     fun handleUnexpected(e: Exception): ResponseEntity<ErrorResponse> {
@@ -106,12 +121,56 @@ class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleHttpMessageNotReadable(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         logger.warn(e) { "HttpMessageNotReadableException (invalid request body)" }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(
-                status = HttpStatus.BAD_REQUEST.value(),
-                message = "Malformed JSON request"
+
+        val fieldName = extractMissingFieldName(e)
+        if (fieldName != null) {
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(
+                    ValidationErrorResponse(
+                        status = HttpStatus.BAD_REQUEST.value(),
+                        message = "Validation error",
+                        errors = mapOf(fieldName to "Field is required")
+                    )
+                )
+        }
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                ErrorResponse(
+                    status = HttpStatus.BAD_REQUEST.value(),
+                    message = "Malformed JSON request"
+                )
             )
+    }
+
+    private fun extractMissingFieldName(e: HttpMessageNotReadableException): String? {
+        val patterns = listOf(
+            Pattern.compile("Missing required creator property '([^']+)'")
+                to 1,
+            Pattern.compile("creator parameter ([A-Za-z0-9_]+)")
+                to 1,
+            // Kotlin/Jackson: "Parameter specified as non-null is null: ... parameter firstName"
+            Pattern.compile("parameter\\s+([A-Za-z0-9_]+)")
+                to 1,
         )
+
+        var current: Throwable? = e
+        while (current != null) {
+            val messages = listOfNotNull(current.message, current.localizedMessage)
+            for (msg in messages) {
+                for ((pattern, groupIdx) in patterns) {
+                    val matcher = pattern.matcher(msg)
+                    if (matcher.find()) {
+                        return matcher.group(groupIdx)
+                    }
+                }
+            }
+            current = current.cause
+        }
+
+        return null
     }
 
 }

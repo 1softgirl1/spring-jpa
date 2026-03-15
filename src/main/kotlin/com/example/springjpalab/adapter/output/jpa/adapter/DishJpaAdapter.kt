@@ -3,6 +3,7 @@ package com.example.springjpalab.adapter.output.jpa.adapter
 import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
 import com.example.springjpalab.adapter.output.jpa.repository.DishJpaRepository
 import com.example.springjpalab.adapter.output.jpa.repository.RestaurantJpaRepository
+import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import org.springframework.context.annotation.Profile
@@ -37,6 +38,7 @@ class DishJpaAdapter(
 
     override fun create(dish: Dish): Dish {
         val restaurantEntity = restaurantRepository.findById(dish.restaurantId).orElse(null)
+            ?: throw NotFoundException("Ресторан с id=${dish.restaurantId} не найден")
 
         val entity = DishJpaEntity(
             name = dish.name,
@@ -51,6 +53,7 @@ class DishJpaAdapter(
 
     override fun update(dish: Dish): Dish {
         val restaurantEntity = restaurantRepository.findById(dish.restaurantId).orElse(null)
+            ?: throw NotFoundException("Ресторан с id=${dish.restaurantId} не найден")
         val existing = repository.findById(dish.id)
         if (existing.isEmpty) {
             throw NoSuchElementException("Dish with id=${dish.id} not found")

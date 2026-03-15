@@ -8,6 +8,7 @@ import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.application.service.DishService
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
+import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
@@ -73,21 +74,28 @@ class OrderController (
     }
     @PostMapping
     fun createOrder(@Valid @RequestBody request: OrderCreateRequest): ResponseEntity<Any>{
-        if (request.dishIds.isEmpty()) {
-            throw IllegalArgumentException("dishIds cannot be empty")
+        val userId = request.userId!!
+        val dishIds = request.dishIds
+
+        try {
+            userService.findById(userId)
+        } catch (e: NotFoundException) {
+            throw IllegalArgumentException("userId: ${e.message}")
         }
 
-        userService.findById(request.userId)
-
-        val dishes = request.dishIds.map { dishId ->
-            dishService.findById(dishId)
+        val dishes = dishIds.map { dishId ->
+            try {
+                dishService.findById(dishId)
+            } catch (e: NotFoundException) {
+                throw IllegalArgumentException("dishIds: ${e.message}")
+            }
         }
 
         val order = Order(
             id = 0,
             status = OrderStatus.PENDING,
             createdAt = LocalDateTime.now(),
-            userId = request.userId,
+            userId = userId,
             dishes = dishes,
         )
         val saved = orderService.create(order)

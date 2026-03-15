@@ -4,6 +4,7 @@ import com.example.springjpalab.adapter.input.dto.dish.DishCreateRequest
 import com.example.springjpalab.adapter.input.dto.dish.DishResponse
 import com.example.springjpalab.adapter.input.dto.dish.DishUpdateRequest
 import com.example.springjpalab.application.service.DishService
+import com.example.springjpalab.application.service.RestaurantService
 import com.example.springjpalab.domain.model.Dish
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
@@ -26,7 +27,8 @@ import java.math.BigDecimal
 @RequestMapping("/api/v1/dishes")
 @Validated
 class DishesController(
-    private val dishService: DishService
+    private val dishService: DishService,
+    private val restaurantService: RestaurantService
 ) {
     @GetMapping
     fun getDishesByNamePart(
@@ -62,6 +64,34 @@ class DishesController(
         @PathVariable(required = true) @Min(1) restaurantId: Long,
         @Valid @RequestBody request: DishCreateRequest
     ): ResponseEntity<DishResponse> {
+        restaurantService.findById(restaurantId)
+        val dish = Dish(
+            id = 0,
+            name = request.name,
+            description = request.description,
+            price = BigDecimal.valueOf(request.price.toDouble()),
+            isAvailable = request.isAvailable,
+            restaurantId = restaurantId
+        )
+        val saved = dishService.create(dish)
+        return ResponseEntity.status(201).body(
+            DishResponse(
+                id = saved.id,
+                name = saved.name,
+                description = saved.description,
+                price = saved.price,
+                isAvailable = saved.isAvailable,
+                restaurantId = saved.restaurantId
+            )
+        )
+    }
+
+    @PostMapping("/api/v1/restaurants/{restaurantId}/dishes")
+    fun createDishInRestaurantV1(
+        @PathVariable(required = true) @Min(1) restaurantId: Long,
+        @Valid @RequestBody request: DishCreateRequest
+    ): ResponseEntity<DishResponse> {
+        restaurantService.findById(restaurantId)
         val dish = Dish(
             id = 0,
             name = request.name,

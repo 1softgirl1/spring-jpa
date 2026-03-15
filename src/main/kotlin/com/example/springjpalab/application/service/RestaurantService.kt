@@ -29,18 +29,20 @@ class RestaurantService (
         }
 
     fun create(restaurant: Restaurant): Restaurant {
-
-        repository.findByName(restaurant.name)?.let {
+        val existing = repository.findByName(restaurant.name)
+        if (existing != null) {
             logger.warn { "Ресторан '${restaurant.name}' уже существует" }
             throw AlreadyExistsException("Ресторан '${restaurant.name}' уже существует")
         }
 
-        val saved = repository.create(restaurant)
+        val newRestaurant = restaurant.copy(id = 0)
+        val saved = repository.create(newRestaurant)
         logger.info { "Создан ресторан: id=${saved.id}, name=${saved.name}" }
         return saved
     }
 
     fun update(id: Long, restaurant: Restaurant): Restaurant {
+
         val toUpdate = restaurant.copy(id = id)
         val updated = repository.update(toUpdate)
         if (updated == null) {

@@ -21,7 +21,6 @@ data class DishCreateRequest (
 
     @field:NotNull(message = "Availability must be specified")
     @field:JsonProperty("isAvailable")
-    @get:JsonIgnore
     val isAvailable: Boolean,
 
 
