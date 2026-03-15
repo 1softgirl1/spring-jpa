@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
+import kotlin.text.toDouble
 
 @RestController
 @Validated
@@ -122,13 +123,13 @@ class RestaurantController(
 
         return ResponseEntity.ok(dishesResponse)
     }
-
     @PostMapping("/{restaurantId}/dishes")
     fun addDishToRestaurant(
         @PathVariable(required = true) @Min(1) restaurantId: Long,
         @Valid @RequestBody request: DishCreateRequest
     ): ResponseEntity<DishResponse> {
-        val restaurant = restaurantService.findById(restaurantId)!!
+
+        restaurantService.findById(restaurantId)
 
         val dish = Dish(
             id = 0,
@@ -136,22 +137,26 @@ class RestaurantController(
             description = request.description,
             price = BigDecimal.valueOf(request.price.toDouble()),
             isAvailable = request.isAvailable,
-            restaurantId = restaurant.id
+            restaurantId = restaurantId
         )
 
-        val createdDish = dishService.create(dish)
+        val saved = dishService.create(dish)
 
         return ResponseEntity.status(201).body(
             DishResponse(
-                id = createdDish.id,
-                name = createdDish.name,
-                description = createdDish.description,
-                price = createdDish.price,
-                isAvailable = createdDish.isAvailable,
-                restaurantId = createdDish.restaurantId
+                id = saved.id,
+                name = saved.name,
+                description = saved.description,
+                price = saved.price,
+                isAvailable = saved.isAvailable,
+                restaurantId = saved.restaurantId
             )
         )
     }
+
+
+
+
 
 
 

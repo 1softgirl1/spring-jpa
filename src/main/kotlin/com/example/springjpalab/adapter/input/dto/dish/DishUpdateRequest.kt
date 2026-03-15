@@ -27,6 +27,4 @@ data class DishUpdateRequest(
     @get:JsonIgnore
     val isAvailable: Boolean,
 
-    @field:NotNull(message = "restaurantId cannot be null")
-    val restaurantId: Long
 )

@@ -10,10 +10,6 @@ data class Dish(
     val name: String,
     val description: String,
     val price: BigDecimal,
-
-    @field:JsonProperty("isAvailable")
-    @get:JsonIgnore
     val isAvailable: Boolean,
-
     val restaurantId: Long
 )
