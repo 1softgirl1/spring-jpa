@@ -26,10 +26,14 @@ class UserJpaAdapter(
     }
 
     override fun update(user: User): User {
-        val existing = repository.findById(user.id ?: throw IllegalArgumentException("User id is null"))
-            .orElseThrow { IllegalArgumentException("User not found with id ${user.id}") }
+        val existing = repository.findById(user.id)
+        if (existing.isEmpty) {
+            throw NoSuchElementException("User with id=${user.id} not found")
+        }
 
-        val updated = existing.copy(
+        val entity = existing.get()
+
+        val updated = entity.copy(
             email = user.email,
             firstName = user.firstName,
             lastName = user.lastName,

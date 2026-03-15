@@ -32,25 +32,28 @@ class RestaurantJpaAdapter (
         return repository.save(entity).toDomain()
     }
 
-    override fun update(restaurant: Restaurant): Restaurant {
+    override fun update(restaurant: Restaurant): Restaurant? {
         val existing = repository.findById(restaurant.id)
-            .orElseThrow { RuntimeException("Restaurant not found") }
 
+        if (existing.isEmpty) return null
 
-        val updatedEntity = RestaurantJpaEntity(
-            id = existing.id,
+        val entity = existing.get()
+
+        val updated = RestaurantJpaEntity(
+            id = entity.id,
             name = restaurant.name,
             address = restaurant.address,
-            dishes = existing.dishes
+            dishes = entity.dishes
         )
 
-        return repository.save(updatedEntity).toDomain()
+        return repository.save(updated).toDomain()
     }
 
+
     override fun deleteById(id: Long): Boolean {
-        return if (repository.existsById(id)) {
-            repository.deleteById(id)
-            true
-        } else false
+        if (!repository.existsById(id)) return false
+
+        repository.deleteById(id)
+        return true
     }
 }

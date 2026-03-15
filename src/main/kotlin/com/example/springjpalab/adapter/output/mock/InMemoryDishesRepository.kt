@@ -42,10 +42,16 @@ class InMemoryDishesRepository: DishRepositoryPort {
         return dish
     }
 
-    override fun deleteById(id: Long) {
+    override fun deleteById(id: Long): Boolean {
         dishes.remove(id)
+        return true
     }
+
     override fun findEntityById(id: Long): DishJpaEntity? {
         return null
+    }
+
+    override fun findByNameAndRestaurantId(name: String, restaurantId: Long): Dish? {
+        TODO("Not yet implemented")
     }
 }

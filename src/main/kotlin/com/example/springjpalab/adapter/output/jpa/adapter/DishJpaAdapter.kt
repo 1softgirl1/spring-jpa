@@ -7,6 +7,7 @@ import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import kotlin.collections.map
 
 @Component
 @Profile("db")
@@ -28,11 +29,14 @@ class DishJpaAdapter(
         repository.findById(id).orElse(null)
 
     override fun findByNamePart(namePart: String): List<Dish?>? =
-        repository.findByNamePart(namePart)?.map { it.toDomain() }
+        repository.findByNamePart(namePart).map { it.toDomain() }
+
+    override fun findByNameAndRestaurantId(name: String, restaurantId: Long): Dish? =
+        repository.findByNameAndRestaurantId(name, restaurantId)?.toDomain()
+
 
     override fun create(dish: Dish): Dish {
-        val restaurantEntity = restaurantRepository.findById(dish.restaurantId)
-            .orElseThrow { IllegalArgumentException("Restaurant not found with id ${dish.restaurantId}") }
+        val restaurantEntity = restaurantRepository.findById(dish.restaurantId).orElse(null)
 
         val entity = DishJpaEntity(
             name = dish.name,
@@ -46,14 +50,16 @@ class DishJpaAdapter(
     }
 
     override fun update(dish: Dish): Dish {
-        val restaurantEntity = restaurantRepository.findById(dish.restaurantId)
-            .orElseThrow { IllegalArgumentException("Restaurant not found with id ${dish.restaurantId}") }
+        val restaurantEntity = restaurantRepository.findById(dish.restaurantId).orElse(null)
+        val existing = repository.findById(dish.id)
+        if (existing.isEmpty) {
+            throw NoSuchElementException("Dish with id=${dish.id} not found")
+        }
 
-        val existing = repository.findById(dish.id ?: throw IllegalArgumentException("Dish id is null"))
-            .orElseThrow { IllegalArgumentException("Dish not found with id ${dish.id}") }
+        val entity = existing.get()
 
         val updatedEntity = DishJpaEntity(
-            id = existing.id,
+            id = entity.id,
             name = dish.name,
             description = dish.description,
             price = dish.price,
@@ -64,18 +70,10 @@ class DishJpaAdapter(
         return repository.save(updatedEntity).toDomain()
     }
 
-    override fun deleteById(id: Long) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id)
-        }
-    }
+    override fun deleteById(id: Long): Boolean {
+        if (!repository.existsById(id)) return false
 
-    private fun DishJpaEntity.toDomain() = Dish(
-        id = this.id,
-        name = this.name,
-        description = this.description,
-        price = this.price,
-        isAvailable = this.isAvailable,
-        restaurantId = this.restaurant.id
-    )
+        repository.deleteById(id)
+        return true
+    }
 }

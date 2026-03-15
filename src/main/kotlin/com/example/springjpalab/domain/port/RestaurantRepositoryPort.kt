@@ -8,7 +8,7 @@ interface RestaurantRepositoryPort {
     fun findById(id: Long): Restaurant?
     fun findByName(name: String): Restaurant?
     fun create(restaurant: Restaurant): Restaurant
-    fun update(restaurant: Restaurant): Restaurant
+    fun update(restaurant: Restaurant): Restaurant?
     fun deleteById(id: Long): Boolean
 
 }

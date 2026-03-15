@@ -2,16 +2,14 @@ package com.example.springjpalab.adapter.input.controller
 
 import com.example.springjpalab.adapter.input.dto.dish.DishCreateRequest
 import com.example.springjpalab.adapter.input.dto.dish.DishResponse
-import com.example.springjpalab.adapter.input.dto.error.ErrorResponse
-
 import com.example.springjpalab.adapter.input.dto.dish.DishUpdateRequest
-
 import com.example.springjpalab.application.service.DishService
-
 import com.example.springjpalab.domain.model.Dish
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,12 +24,13 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/api/v1/dishes")
+@Validated
 class DishesController(
     private val dishService: DishService
 ) {
     @GetMapping
     fun getDishesByNamePart(
-        @RequestParam(required = false) namePart: String?
+        @RequestParam(required = false) @Size(min = 2, message = "Минимум 2 символа для поиска") namePart: String?
     ): ResponseEntity<Any> {
 
         return if (namePart.isNullOrBlank()) {
@@ -43,82 +42,78 @@ class DishesController(
     }
 
     @GetMapping("/{id}")
-    fun getDishById(@PathVariable(required = true) id: Long): ResponseEntity<Any> {
+    fun getDishById(
+        @PathVariable(required = true) @Min(1)  id: Long): ResponseEntity<Any> {
         val dish = dishService.findById(id)
-
-        if (dish != null) {
-            return ResponseEntity.ok(DishResponse(id,
-                dish.name,
-                dish.description,
-                dish.price,
-                dish.isAvailable,
-                dish.restaurantId))
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "Dish with id=${id} not found"
-                )
+        return ResponseEntity.ok(
+            DishResponse(
+                id = dish.id,
+                name = dish.name,
+                description = dish.description,
+                price = dish.price,
+                isAvailable = dish.isAvailable,
+                restaurantId = dish.restaurantId
             )
-        }
+        )
+    }
 
+    @PostMapping("/restaurants/{restaurantId}/dishes")
+    fun createDishInRestaurant(
+        @PathVariable(required = true) @Min(1) restaurantId: Long,
+        @Valid @RequestBody request: DishCreateRequest
+    ): ResponseEntity<DishResponse> {
+        val dish = Dish(
+            id = 0,
+            name = request.name,
+            description = request.description,
+            price = BigDecimal.valueOf(request.price.toDouble()),
+            isAvailable = request.isAvailable,
+            restaurantId = restaurantId
+        )
+        val saved = dishService.create(dish)
+        return ResponseEntity.status(201).body(
+            DishResponse(
+                id = saved.id,
+                name = saved.name,
+                description = saved.description,
+                price = saved.price,
+                isAvailable = saved.isAvailable,
+                restaurantId = saved.restaurantId
+            )
+        )
     }
 
 
     @PutMapping("/{id}")
     fun updateDishById(
-        @PathVariable(required = true) id: Long,
+        @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody(required = true) request: DishUpdateRequest
     ): ResponseEntity<Any> {
         val existingDish = dishService.findById(id)
-        return if (existingDish != null) {
-            val updatedDishEntity = existingDish.copy(
-                name = request.name,
-                description = request.description,
-                price = BigDecimal.valueOf(request.price.toDouble()),
-                isAvailable = request.isAvailable
-            )
-            val updatedDish = dishService.update(id, updatedDishEntity)
+        val updatedDishEntity = existingDish.copy(
+            name = request.name,
+            description = request.description,
+            price = BigDecimal.valueOf(request.price.toDouble()),
+            isAvailable = request.isAvailable
+        )
+        val updatedDish = dishService.update(id, updatedDishEntity)
 
-            ResponseEntity.ok(
-                DishResponse(
-                    updatedDish.id,
-                    updatedDish.name,
-                    updatedDish.description,
-                    updatedDish.price,
-                    updatedDish.isAvailable,
-                    updatedDish.restaurantId
-                )
+        return ResponseEntity.ok(
+            DishResponse(
+                id = updatedDish.id,
+                name = updatedDish.name,
+                description = updatedDish.description,
+                price = updatedDish.price,
+                isAvailable = updatedDish.isAvailable,
+                restaurantId = updatedDish.restaurantId
             )
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "Dish with id=${id} not found"
-                )
-            )
-
-        }
+        )
     }
     @DeleteMapping("/{id}")
-    fun deleteDishById(@PathVariable(required = true) id: Long): ResponseEntity<Any> {
+    fun deleteDishById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Any> {
         val existingDish = dishService.findById(id)
-        return if (existingDish != null) {
-            dishService.delete(existingDish.id)
-            ResponseEntity.noContent().build()
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "Dish with id=${id} not found"
-                )
-            )
-        }
+        dishService.delete(existingDish.id)
+        return ResponseEntity.noContent().build()
 
     }
 
