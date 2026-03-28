@@ -5,7 +5,6 @@ on:
     branches:
       - master
       - main
-      - lab6
 
 jobs:
   check-tasks:
@@ -23,9 +22,6 @@ jobs:
 
       - name: Load .env
         run: cat .env >> $GITHUB_ENV
-
-      - name: Make Maven Wrapper executable
-        run: chmod +x ./mvnw
 
       - name: Compile Spring app
         run: ./mvnw clean
