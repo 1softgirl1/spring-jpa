@@ -1,0 +1,34 @@
+name: Spring boot CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+      - lab6  # добавили твою ветку
+
+jobs:
+  check-tasks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Load .env
+        run: cat .env >> $GITHUB_ENV
+
+      - name: Make Maven Wrapper executable
+        run: chmod +x ./mvnw
+
+      - name: Compile Spring app
+        run: ./mvnw clean
+
+      - name: Run Spring app tests
+        run: ./mvnw test
