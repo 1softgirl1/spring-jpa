@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
+@Profile("test", "db")
 class OrderJpaAdapter (
     private val repository: OrderJpaRepository,
     private val userRepository: UserJpaRepository,
@@ -56,12 +57,10 @@ class OrderJpaAdapter (
 
     }
     override fun update(order: Order): Order {
-        val existing = repository.findById(order.id)
-        if (existing.isEmpty) {
-            throw NoSuchElementException("Order with id=${order.id} not found")
+        val entity = repository.findById(order.id).orElseThrow {
+            NoSuchElementException("Order with id=${order.id} not found")
         }
 
-        val entity = existing.get()
 
         val user = userRepository.findById(order.userId).orElse(null) 
 

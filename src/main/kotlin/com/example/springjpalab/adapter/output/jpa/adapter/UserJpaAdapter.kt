@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
+@Profile("test", "db")
 class UserJpaAdapter(
     private val repository: UserJpaRepository
 ) : UserRepositoryPort {
@@ -25,12 +26,9 @@ class UserJpaAdapter(
     }
 
     override fun update(user: User): User {
-        val existing = repository.findById(user.id)
-        if (existing.isEmpty) {
-            throw NoSuchElementException("User with id=${user.id} not found")
+        val entity = repository.findById(user.id).orElseThrow {
+            NoSuchElementException("User with id=${user.id} not found")
         }
-
-        val entity = existing.get()
 
         val updated = entity.copy(
             email = user.email,

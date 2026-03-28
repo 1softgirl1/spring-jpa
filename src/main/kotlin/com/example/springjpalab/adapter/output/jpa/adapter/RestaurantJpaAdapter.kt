@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
+@Profile("db", "test")
 class RestaurantJpaAdapter (
     private val repository: RestaurantJpaRepository
 ): RestaurantRepositoryPort
@@ -34,9 +35,9 @@ class RestaurantJpaAdapter (
     override fun update(restaurant: Restaurant): Restaurant? {
         val existing = repository.findById(restaurant.id)
 
-        if (existing.isEmpty) return null
-
-        val entity = existing.get()
+        val entity = repository.findById(restaurant.id).orElseThrow {
+            NoSuchElementException("Restaurant with id=${restaurant.id} not found")
+        }
 
         val updated = RestaurantJpaEntity(
             id = entity.id,

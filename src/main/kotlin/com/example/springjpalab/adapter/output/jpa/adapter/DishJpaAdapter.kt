@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 import kotlin.collections.map
 
 @Component
+@Profile("test", "db")
 class DishJpaAdapter(
     private val repository: DishJpaRepository,
     private val restaurantRepository: RestaurantJpaRepository
@@ -53,12 +54,9 @@ class DishJpaAdapter(
     override fun update(dish: Dish): Dish {
         val restaurantEntity = restaurantRepository.findById(dish.restaurantId).orElse(null)
             ?: throw NotFoundException("Ресторан с id=${dish.restaurantId} не найден")
-        val existing = repository.findById(dish.id)
-        if (existing.isEmpty) {
-            throw NoSuchElementException("Dish with id=${dish.id} not found")
+        val entity = repository.findById(dish.id).orElseThrow {
+            NoSuchElementException("Dish with id=${dish.id} not found")
         }
-
-        val entity = existing.get()
 
         val updatedEntity = DishJpaEntity(
             id = entity.id,
