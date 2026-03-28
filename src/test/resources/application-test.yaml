@@ -1,0 +1,12 @@
+# src/test/resources/application-test.yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.example.delivery: DEBUG

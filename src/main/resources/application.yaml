@@ -19,7 +19,7 @@ spring:
         web-allow-others: true
 
   profiles:
-    active: db
+    active: test
 
   flyway:
     # Flyway включен по умолчанию, но можно указать явно

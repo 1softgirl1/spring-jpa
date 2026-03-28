@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 @Component
-@Profile("db")
 class OrderJpaAdapter (
     private val repository: OrderJpaRepository,
     private val userRepository: UserJpaRepository,

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component
 import kotlin.collections.map
 
 @Component
-@Profile("db")
 class DishJpaAdapter(
     private val repository: DishJpaRepository,
     private val restaurantRepository: RestaurantJpaRepository

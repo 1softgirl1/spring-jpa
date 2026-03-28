@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 
 
 @Component
-@Profile("db")
 class RestaurantJpaAdapter (
     private val repository: RestaurantJpaRepository
 ): RestaurantRepositoryPort
