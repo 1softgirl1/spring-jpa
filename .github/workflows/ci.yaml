@@ -3,7 +3,9 @@ name: Spring boot CI
 on:
   pull_request:
     branches:
-      - lab6
+      - master
+      - main
+      - lab6  # добавили твою ветку
 
 jobs:
   check-tasks:
@@ -13,20 +15,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup JDK 17
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Load .env
         run: cat .env >> $GITHUB_ENV
 
-      - name: Grant execute permission for Maven Wrapper
+      - name: Make Maven Wrapper executable
         run: chmod +x ./mvnw
 
       - name: Compile Spring app
-        run: ./mvnw clean compile
+        run: ./mvnw clean
 
       - name: Run Spring app tests
-        run: ./mvnw test -Dspring.profiles.active=test
+        run: ./mvnw test
