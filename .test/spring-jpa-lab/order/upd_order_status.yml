@@ -1,0 +1,21 @@
+info:
+  name: upd_order_status
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/orders/2/status"
+  body:
+    type: json
+    data: |-
+      {
+        "status": "CONFIRMED"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
