@@ -42,7 +42,10 @@ class OrderJpaAdapter (
 
 
     override fun create(order: Order): Order {
-        val user = userRepository.findById(order.userId).orElse(null)
+        val user = userRepository.findById(order.userId).orElseThrow {
+            NoSuchElementException("User with id=${order.userId} not found")
+        }
+
         val dishes = dishRepository.findAllById(order.dishes.map { it.id })
 
         val entity = OrderJpaEntity(
@@ -51,8 +54,8 @@ class OrderJpaAdapter (
             createdAt = LocalDateTime.now(),
             user = user,
             dishes = dishes
-
         )
+
         return repository.save(entity).toDomain()
 
     }
@@ -62,7 +65,9 @@ class OrderJpaAdapter (
         }
 
 
-        val user = userRepository.findById(order.userId).orElse(null) 
+        val user = userRepository.findById(order.userId).orElseThrow {
+            NoSuchElementException("User with id=${order.userId} not found")
+        }
 
         val dishes = dishRepository.findAllById(order.dishes.map { it.id })
 

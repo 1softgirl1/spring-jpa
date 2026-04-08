@@ -1,18 +1,18 @@
 package com.example.springjpalab.adapter.input.controller
 
-import com.example.springjpalab.adapter.input.dto.dish.DishResponse
 import com.example.springjpalab.adapter.input.dto.order.OrderCreateRequest
-import com.example.springjpalab.adapter.input.dto.order.OrderResponse
 import com.example.springjpalab.adapter.input.dto.order.OrderStatusUpdateRequest
+import com.example.springjpalab.adapter.input.mapper.toResponse
 import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
-import com.example.springjpalab.application.service.DishService
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
-import com.example.springjpalab.domain.exception.NotFoundException
-import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.User
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDateTime
 
 
 @RestController
@@ -30,148 +29,72 @@ import java.time.LocalDateTime
 @Validated
 class OrderController (
     private val orderService: OrderService,
-    private val userService: UserService,
-    private val dishService: DishService
+    private val userService: UserService
 ){
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping
-    fun getOrders(@RequestParam(required = false) @Min(1) userId: Long?,
-                  @RequestParam(required = false) status: OrderStatus?
+    fun getOrders(
+        @RequestParam(required = false) @Min(1) userId: Long?,
+        @RequestParam(required = false) status: OrderStatus?,
+        @AuthenticationPrincipal userDetails: UserDetails
     ): ResponseEntity<Any> {
-        val ordersNullable = when {
-            userId != null && status != null ->
-                orderService.findByUserIdAndStatus(userId, status)
-            userId != null ->
-                orderService.findByUserId(userId)
-            status != null ->
-                orderService.findByStatus(status)
-            else ->
-                orderService.findAll()
-        }
-        val orders = ordersNullable ?: emptyList()
-
-        return ResponseEntity.ok(
-            orders.map { order ->
-                OrderResponse(
-                    id = order.id,
-                    status = order.status,
-                    createdAt = order.createdAt.toString(),
-                    userId = order.userId,
-                    dishes = order.dishes.map { dish ->
-                        DishResponse(
-                            id = dish.id,
-                            name = dish.name,
-                            description = dish.description,
-                            price = dish.price,
-                            isAvailable = dish.isAvailable,
-                            restaurantId = dish.restaurantId
-                        )
-                    }
-                )
-            }
+        val requester = currentUser(userDetails)
+        val orders = orderService.getOrdersForRequester(
+            requestedUserId = userId,
+            status = status,
+            requesterId = requester.id,
+            isAdmin = isAdmin(userDetails)
         )
-
-
+        return ResponseEntity.ok(orders.map { it.toResponse() })
     }
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
-    fun createOrder(@Valid @RequestBody request: OrderCreateRequest): ResponseEntity<Any>{
-        val userId = request.userId!!
-        val dishIds = request.dishIds
-
-        try {
-            userService.findById(userId)
-        } catch (e: NotFoundException) {
-            throw IllegalArgumentException("userId: ${e.message}")
-        }
-
-        val dishes = dishIds.map { dishId ->
-            try {
-                dishService.findById(dishId)
-            } catch (e: NotFoundException) {
-                throw IllegalArgumentException("dishIds: ${e.message}")
-            }
-        }
-
-        val order = Order(
-            id = 0,
-            status = OrderStatus.PENDING,
-            createdAt = LocalDateTime.now(),
-            userId = userId,
-            dishes = dishes,
+    fun createOrder(
+        @Valid @RequestBody request: OrderCreateRequest,
+        @AuthenticationPrincipal userDetails: UserDetails
+    ): ResponseEntity<Any>{
+        val saved = orderService.createForUser(
+            userId = currentUser(userDetails).id,
+            dishIds = request.dishIds
         )
-        val saved = orderService.create(order)
-
-        return ResponseEntity.status(201).body(
-            OrderResponse(
-                id = saved.id,
-                status = saved.status,
-                createdAt = saved.createdAt.toString(),
-                userId = saved.userId,
-                dishes = saved.dishes.map { dish ->
-                    DishResponse(
-                        id = dish.id,
-                        name = dish.name,
-                        description = dish.description,
-                        price = dish.price,
-                        isAvailable = dish.isAvailable,
-                        restaurantId = dish.restaurantId
-                    )
-                }
-            )
-        )
-
+        return ResponseEntity.status(201).body(saved.toResponse())
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/{id}")
-    fun getOrderById(@PathVariable @Min(1) id: Long): ResponseEntity<Any>{
-        val order = requireNotNull(orderService.findById(id))
-        return ResponseEntity.ok(
-            OrderResponse(
-                id = order.id,
-                status = order.status,
-                createdAt = order.createdAt.toString(),
-                userId = order.userId,
-                dishes = order.dishes.map { dish ->
-                    DishResponse(
-                        id = dish.id,
-                        name = dish.name,
-                        description = dish.description,
-                        price = dish.price,
-                        isAvailable = dish.isAvailable,
-                        restaurantId = dish.restaurantId
-                    )
-                }
-            )
+    fun getOrderById(
+        @PathVariable @Min(1) id: Long,
+        @AuthenticationPrincipal userDetails: UserDetails
+    ): ResponseEntity<Any>{
+        val order = orderService.getByIdForRequester(
+            orderId = id,
+            requesterId = currentUser(userDetails).id,
+            isAdmin = isAdmin(userDetails)
         )
+        return ResponseEntity.ok(order.toResponse())
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     fun updateOrderStatus(
         @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody request: OrderStatusUpdateRequest
     ): ResponseEntity<Any> {
-        val order = requireNotNull(orderService.findById(id))
+        val order = orderService.findById(id)
         val updatedOrder = orderService.update(
             id,
             order.copy(status = request.status)
         )
 
-        return ResponseEntity.ok(
-            OrderResponse(
-                id = updatedOrder.id,
-                status = updatedOrder.status,
-                createdAt = updatedOrder.createdAt.toString(),
-                userId = updatedOrder.userId,
-                dishes = updatedOrder.dishes.map { dish ->
-                    DishResponse(
-                        id = dish.id,
-                        name = dish.name,
-                        description = dish.description,
-                        price = dish.price,
-                        isAvailable = dish.isAvailable,
-                        restaurantId = dish.restaurantId
-                    )
-                }
-            )
-        )
+        return ResponseEntity.ok(updatedOrder.toResponse())
     }
+
+    private fun currentUser(userDetails: UserDetails): User =
+        userService.findByEmail(userDetails.username)
+            ?: throw IllegalArgumentException("Пользователь не найден")
+
+    private fun isAdmin(userDetails: UserDetails): Boolean =
+        userDetails.authorities.any { it.authority == "ROLE_ADMIN" }
 
 
 }

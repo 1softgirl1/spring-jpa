@@ -8,14 +8,17 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.web.servlet.MockMvc
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.*
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.testSecurityContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -42,17 +45,37 @@ class RestaurantIntegrationTest {
     @Autowired
     lateinit var mockMvc: MockMvc
 
+    private fun withMockUser(request: MockHttpServletRequestBuilder): MockHttpServletRequestBuilder =
+        request.with(testSecurityContext())
+
+
     @Test
-    fun `POST restaurant возвращает 201 и создаёт запись`() {
+    @WithMockUser(roles = ["ADMIN"])
+    fun `создание ресторана от ADMIN возвращает 201`() {
+        mockMvc.perform(
+            withMockUser(post("/api/v1/restaurants"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name": "Тест", "address": "Улица 1"}""")
+        ).andExpect(status().isCreated)
+    }
+
+    @Test
+    @WithMockUser(roles = ["USER"])
+    fun `создание ресторана от USER возвращает 403`() {
+        mockMvc.perform(
+            withMockUser(post("/api/v1/restaurants"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"name": "Тест", "address": "Улица 1"}""")
+        ).andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `создание ресторана без токена возвращает 401`() {
         mockMvc.perform(
             post("/api/v1/restaurants")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name": "New Place", "address": "ул. Тестовая, 1"}""")
-        )
-            .andExpect(status().isCreated)
-            .andExpect(jsonPath("$.id").exists())
-            .andExpect(jsonPath("$.name").value("New Place"))
-            .andExpect(jsonPath("$.address").value("ул. Тестовая, 1"))
+                .content("""{"name": "Тест", "address": "Улица 1"}""")
+        ).andExpect(status().isUnauthorized)
     }
 
     @Test
@@ -63,9 +86,10 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `POST restaurant с пустым именем возвращает 400 и errors`() {
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "", "address": "ул. Тестовая, 1"}""")
         )
@@ -75,9 +99,10 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `POST restaurant с пустым адресом возвращает 400 и errors`() {
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "Твиани", "address": ""}""")
         )
@@ -87,9 +112,10 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `POST restaurant с невалидным body возвращает 400`() {
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{}""")
         )
@@ -105,12 +131,14 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `GET restaurant по id возвращает 200`(){
         val result = mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "Find Me", "address": "ул. 2"}""")
         )
+            .andExpect(status().isCreated)
             .andReturn()
 
         val id = JsonPath.read<Int>(result.response.contentAsString, "$.id")
@@ -121,11 +149,12 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `PUT restaurant обновляет и возвращает 200`() {
         val uniqueName = "Old Name ${System.currentTimeMillis()}"
 
         val result = mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "$uniqueName", "address": "ул. 3"}""")
         )
@@ -135,7 +164,7 @@ class RestaurantIntegrationTest {
         val id = JsonPath.read<Int>(result.response.contentAsString, "$.id")
 
         mockMvc.perform(
-            put("/api/v1/restaurants/$id")
+            withMockUser(put("/api/v1/restaurants/$id"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "New Name", "address": "ул. 3"}""")
         )
@@ -144,18 +173,20 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `PUT с пустым body возвращвет 400`(){
         val result = mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "Old Name", "address": "ул. 3"}""")
         )
+            .andExpect(status().isCreated)
             .andReturn()
 
         val id = JsonPath.read<Int>(result.response.contentAsString, "$.id")
 
         mockMvc.perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/restaurants/$id")
+            withMockUser(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/restaurants/$id"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "", "address": ""}""")
         )
@@ -166,15 +197,16 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `POST второго ресторана возвращает 201`() {
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "First", "address": "ул. 5"}""")
-        )
+        ).andExpect(status().isCreated)
 
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "Second", "address": "ул. 6"}""")
         )
@@ -183,43 +215,45 @@ class RestaurantIntegrationTest {
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `POST дубликата ресторана возвращает 409`() {
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name": "First", "address": "ул. 5"}""")
-        )
+                .content("""{"name": "First1", "address": "ул. 5"}""")
+        ).andExpect(status().isCreated)
 
         mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name": "First", "address": "ул. 6"}""")
+                .content("""{"name": "First1", "address": "ул. 6"}""")
         )
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.status").value(409))
     }
 
     @Test
+    @WithMockUser(roles = ["ADMIN"])
     fun `DELETE ресторанов и проверка что они удалены`() {
         val r1 = mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "ToDelete1", "address": "ул. 10"}""")
-        ).andReturn()
+        ).andExpect(status().isCreated).andReturn()
 
         val r2 = mockMvc.perform(
-            post("/api/v1/restaurants")
+            withMockUser(post("/api/v1/restaurants"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"name": "ToDelete2", "address": "ул. 11"}""")
-        ).andReturn()
+        ).andExpect(status().isCreated).andReturn()
 
         val id1 = JsonPath.read<Int>(r1.response.contentAsString, "$.id")
         val id2 = JsonPath.read<Int>(r2.response.contentAsString, "$.id")
 
-        mockMvc.perform(delete("/api/v1/restaurants/$id1"))
+        mockMvc.perform(withMockUser(delete("/api/v1/restaurants/$id1")))
             .andExpect(status().isNoContent)
 
-        mockMvc.perform(delete("/api/v1/restaurants/$id2"))
+        mockMvc.perform(withMockUser(delete("/api/v1/restaurants/$id2")))
             .andExpect(status().isNoContent)
 
         mockMvc.perform(get("/api/v1/restaurants/$id1"))

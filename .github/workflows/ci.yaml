@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - main
-      - lab6  # добавили твою ветку
+      - lab6
 
 jobs:
   check-tasks:

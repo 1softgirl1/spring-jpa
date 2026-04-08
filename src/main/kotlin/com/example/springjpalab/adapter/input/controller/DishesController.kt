@@ -1,15 +1,14 @@
 package com.example.springjpalab.adapter.input.controller
 
 import com.example.springjpalab.adapter.input.dto.dish.DishCreateRequest
-import com.example.springjpalab.adapter.input.dto.dish.DishResponse
 import com.example.springjpalab.adapter.input.dto.dish.DishUpdateRequest
+import com.example.springjpalab.adapter.input.mapper.toResponse
 import com.example.springjpalab.application.service.DishService
-import com.example.springjpalab.application.service.RestaurantService
-import com.example.springjpalab.domain.model.Dish
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Size
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,122 +26,43 @@ import java.math.BigDecimal
 @RequestMapping("/api/v1/dishes")
 @Validated
 class DishesController(
-    private val dishService: DishService,
-    private val restaurantService: RestaurantService
+    private val dishService: DishService
 ) {
     @GetMapping
     fun getDishesByNamePart(
         @RequestParam(required = false) @Size(min = 2, message = "Минимум 2 символа для поиска") namePart: String?
     ): ResponseEntity<Any> {
-
-        return if (namePart.isNullOrBlank()) {
-            ResponseEntity.ok(dishService.findAll())
-        } else {
-            ResponseEntity.ok(dishService.findByNamePart(namePart))
-        }
-
+        return ResponseEntity.ok(dishService.getDishes(namePart).map { it.toResponse() })
     }
 
     @GetMapping("/{id}")
     fun getDishById(
         @PathVariable(required = true) @Min(1)  id: Long): ResponseEntity<Any> {
         val dish = dishService.findById(id)
-        return ResponseEntity.ok(
-            DishResponse(
-                id = dish.id,
-                name = dish.name,
-                description = dish.description,
-                price = dish.price,
-                isAvailable = dish.isAvailable,
-                restaurantId = dish.restaurantId
-            )
-        )
+        return ResponseEntity.ok(dish.toResponse())
     }
 
-    @PostMapping("/restaurants/{restaurantId}/dishes")
-    fun createDishInRestaurant(
-        @PathVariable(required = true) @Min(1) restaurantId: Long,
-        @Valid @RequestBody request: DishCreateRequest
-    ): ResponseEntity<DishResponse> {
-        restaurantService.findById(restaurantId)
-        val dish = Dish(
-            id = 0,
-            name = request.name,
-            description = request.description,
-            price = BigDecimal.valueOf(request.price.toDouble()),
-            isAvailable = request.isAvailable,
-            restaurantId = restaurantId
-        )
-        val saved = dishService.create(dish)
-        return ResponseEntity.status(201).body(
-            DishResponse(
-                id = saved.id,
-                name = saved.name,
-                description = saved.description,
-                price = saved.price,
-                isAvailable = saved.isAvailable,
-                restaurantId = saved.restaurantId
-            )
-        )
-    }
-
-    @PostMapping("/api/v1/restaurants/{restaurantId}/dishes")
-    fun createDishInRestaurantV1(
-        @PathVariable(required = true) @Min(1) restaurantId: Long,
-        @Valid @RequestBody request: DishCreateRequest
-    ): ResponseEntity<DishResponse> {
-        restaurantService.findById(restaurantId)
-        val dish = Dish(
-            id = 0,
-            name = request.name,
-            description = request.description,
-            price = BigDecimal.valueOf(request.price.toDouble()),
-            isAvailable = request.isAvailable,
-            restaurantId = restaurantId
-        )
-        val saved = dishService.create(dish)
-        return ResponseEntity.status(201).body(
-            DishResponse(
-                id = saved.id,
-                name = saved.name,
-                description = saved.description,
-                price = saved.price,
-                isAvailable = saved.isAvailable,
-                restaurantId = saved.restaurantId
-            )
-        )
-    }
-
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     fun updateDishById(
         @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody(required = true) request: DishUpdateRequest
     ): ResponseEntity<Any> {
-        val existingDish = dishService.findById(id)
-        val updatedDishEntity = existingDish.copy(
+        val updatedDish = dishService.updateDish(
+            id = id,
             name = request.name,
             description = request.description,
             price = BigDecimal.valueOf(request.price.toDouble()),
             isAvailable = request.isAvailable
         )
-        val updatedDish = dishService.update(id, updatedDishEntity)
 
-        return ResponseEntity.ok(
-            DishResponse(
-                id = updatedDish.id,
-                name = updatedDish.name,
-                description = updatedDish.description,
-                price = updatedDish.price,
-                isAvailable = updatedDish.isAvailable,
-                restaurantId = updatedDish.restaurantId
-            )
-        )
+        return ResponseEntity.ok(updatedDish.toResponse())
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     fun deleteDishById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Any> {
-        val existingDish = dishService.findById(id)
-        dishService.delete(existingDish.id)
+        dishService.delete(id)
         return ResponseEntity.noContent().build()
 
     }

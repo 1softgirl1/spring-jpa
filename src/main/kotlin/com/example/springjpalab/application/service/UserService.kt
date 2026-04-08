@@ -51,6 +51,28 @@ class UserService(
     fun findAll(): List<User> =
         repository.findAll()
 
+    fun getAllUsers(): List<User> =
+        findAll()
+
+    fun updateUserData(
+        id: Long,
+        email: String,
+        firstName: String,
+        lastName: String,
+        isActive: Boolean
+    ): User {
+        val existing = findById(id)
+        return update(
+            id,
+            existing.copy(
+                email = email,
+                firstName = firstName,
+                lastName = lastName,
+                isActive = isActive
+            )
+        )
+    }
+
     fun delete(id: Long) {
         repository.findById(id) ?: run {
             logger.warn { "Пользователь с id=$id не найден" }
@@ -58,5 +80,9 @@ class UserService(
         }
         repository.deleteById(id)
         logger.info { "Удален пользователь: id=$id" }
+    }
+
+    fun deleteUserById(id: Long) {
+        delete(id)
     }
 }

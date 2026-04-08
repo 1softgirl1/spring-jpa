@@ -3,6 +3,7 @@ package com.example.springjpalab.service
 import com.example.springjpalab.application.service.UserService
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
+import com.example.springjpalab.domain.model.Role
 import io.mockk.impl.annotations.InjectMockKs
 import com.example.springjpalab.domain.model.User
 import com.example.springjpalab.domain.port.UserRepositoryPort
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import io.mockk.impl.annotations.MockK
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 
 
 @ExtendWith(MockKExtension::class)
@@ -25,7 +28,9 @@ class UserServiceTest {
     @InjectMockKs
     lateinit var service: UserService
 
-    private val sampleUser = User(id = 1L, email = "user@example.com", firstName = "Ivan", lastName = "Petrov", isActive = true)
+    val hash = BCryptPasswordEncoder().encode("password")!!
+
+    private val sampleUser = User(id = 1L, email = "user@example.com", firstName = "Ivan", lastName = "Petrov", hashedPassword = hash , role = Role.USER, isActive = true)
 
     @BeforeEach
     fun setUp() {
@@ -98,7 +103,8 @@ class UserServiceTest {
 
     @Test
     fun `create успешно создает нового пользователя`() {
-        val newUser = User(id = 0, email = "pog0sian@yandex.ru", firstName = "David", lastName = "Pogosian", isActive = true)
+        val hash = BCryptPasswordEncoder().encode("passwwword")!!
+        val newUser = User(id = 0, email = "pog0sian@yandex.ru", firstName = "David", lastName = "Pogosian", hashedPassword = hash, role = Role.USER,isActive = true)
         val savedUser = newUser.copy(id = 2L)
 
         every { repository.findByEmail(newUser.email) } returns null

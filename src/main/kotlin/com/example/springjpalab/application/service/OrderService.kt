@@ -5,13 +5,17 @@ import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.domain.exception.InvalidOrderStateException
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.port.OrderRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class OrderService (
-    private val repository: OrderRepositoryPort
+    private val repository: OrderRepositoryPort,
+    private val dishRepository: DishRepositoryPort
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -34,6 +38,51 @@ class OrderService (
 
     fun findByUserIdAndStatus(userId: Long, status: OrderStatus): List<Order> =
         repository.findByUserIdAndStatus(userId, status)
+
+    fun getOrdersForRequester(
+        requestedUserId: Long?,
+        status: OrderStatus?,
+        requesterId: Long,
+        isAdmin: Boolean
+    ): List<Order> {
+        if (!isAdmin && requestedUserId != null && requestedUserId != requesterId) {
+            throw AccessDeniedException("Доступ запрещен")
+        }
+
+        val effectiveUserId = if (isAdmin) requestedUserId else requesterId
+
+        return when {
+            effectiveUserId != null && status != null -> findByUserIdAndStatus(effectiveUserId, status)
+            effectiveUserId != null -> findByUserId(effectiveUserId)
+            status != null -> findByStatus(status)
+            else -> findAll()
+        }
+    }
+
+    fun createForUser(userId: Long, dishIds: List<Long>): Order {
+        val dishes = dishIds.map { dishId ->
+            dishRepository.findById(dishId)
+                ?: throw IllegalArgumentException("dishIds: Блюдо с id=$dishId не найдено")
+        }
+
+        return create(
+            Order(
+                id = 0,
+                status = OrderStatus.PENDING,
+                createdAt = LocalDateTime.now(),
+                userId = userId,
+                dishes = dishes
+            )
+        )
+    }
+
+    fun getByIdForRequester(orderId: Long, requesterId: Long, isAdmin: Boolean): Order {
+        val order = findById(orderId)
+        if (!isAdmin && order.userId != requesterId) {
+            throw AccessDeniedException("Доступ запрещен")
+        }
+        return order
+    }
 
     fun create(order: Order): Order {
         val newOrd = order.copy(id = 0)

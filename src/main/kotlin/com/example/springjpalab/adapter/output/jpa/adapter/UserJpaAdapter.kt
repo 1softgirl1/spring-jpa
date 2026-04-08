@@ -1,5 +1,6 @@
 package com.example.springjpalab.adapter.output.jpa.adapter
 
+
 import com.example.springjpalab.adapter.output.jpa.entity.UserJpaEntity
 import com.example.springjpalab.adapter.output.jpa.repository.UserJpaRepository
 import com.example.springjpalab.domain.model.User
@@ -19,7 +20,8 @@ class UserJpaAdapter(
             email = user.email,
             firstName = user.firstName,
             lastName = user.lastName,
-            isActive = user.isActive
+            isActive = user.isActive,
+            passwordHash = user.hashedPassword
         )
         val saved = repository.save(entity)
         return saved.toDomain()
@@ -56,6 +58,8 @@ class UserJpaAdapter(
         email = this.email,
         firstName = this.firstName,
         lastName = this.lastName,
-        isActive = this.isActive
+        isActive = this.isActive,
+        hashedPassword = this.passwordHash,
+        role = this.role
     )
 }

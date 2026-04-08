@@ -3,6 +3,7 @@ import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.port.OrderRepositoryPort
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
@@ -19,6 +20,9 @@ import kotlin.test.Test
 class OrderServiceTest {
     @MockK
     lateinit var repository: OrderRepositoryPort
+
+    @MockK
+    lateinit var dishRepository: DishRepositoryPort
 
     @InjectMockKs
     lateinit var service: OrderService

@@ -2,6 +2,7 @@ package com.example.springjpalab.application.service
 
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
+import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.model.Restaurant
 import com.example.springjpalab.domain.port.RestaurantRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -41,6 +42,16 @@ class RestaurantService (
         return saved
     }
 
+    fun createRestaurant(name: String, address: String): Restaurant =
+        create(
+            Restaurant(
+                id = 0,
+                name = name,
+                address = address,
+                dishes = emptyList()
+            )
+        )
+
     fun update(id: Long, restaurant: Restaurant): Restaurant {
 
         val toUpdate = restaurant.copy(id = id)
@@ -52,6 +63,20 @@ class RestaurantService (
         logger.info { "Обновлен ресторан: id=${updated.id}, name=${updated.name}" }
         return updated
     }
+
+    fun updateRestaurant(id: Long, name: String, address: String): Restaurant {
+        val existing = findById(id)
+        return update(
+            id,
+            existing.copy(
+                name = name,
+                address = address
+            )
+        )
+    }
+
+    fun getRestaurantDishes(id: Long): List<Dish> =
+        findById(id).dishes
 
     fun delete(id: Long) {
         val deleted = repository.deleteById(id)

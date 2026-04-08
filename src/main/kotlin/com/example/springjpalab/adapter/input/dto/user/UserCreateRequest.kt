@@ -22,4 +22,8 @@ data class UserCreateRequest(
     @field:NotNull(message = "Active cannot be null or empty")
     @JsonProperty("isActive")
     val isActive: Boolean = true,
+
+    @field:NotBlank(message = "Role cannot be blank")
+    val role: String
+
 )

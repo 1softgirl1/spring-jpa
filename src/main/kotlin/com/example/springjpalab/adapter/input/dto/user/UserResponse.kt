@@ -11,5 +11,7 @@ data class UserResponse (
     val lastName: String,
 
     @JsonProperty("isActive")
-    val isActive: Boolean
+    val isActive: Boolean,
+
+    val role: String
 )

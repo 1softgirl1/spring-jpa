@@ -1,17 +1,15 @@
 package com.example.springjpalab.adapter.input.controller
 
 import com.example.springjpalab.adapter.input.dto.dish.DishCreateRequest
-import com.example.springjpalab.adapter.input.dto.dish.DishResponse
 import com.example.springjpalab.adapter.input.dto.restaurant.RestaurantCreateRequest
-import com.example.springjpalab.adapter.input.dto.restaurant.RestaurantResponse
 import com.example.springjpalab.adapter.input.dto.restaurant.RestaurantUpdateRequest
+import com.example.springjpalab.adapter.input.mapper.toResponse
 import com.example.springjpalab.application.service.DishService
 import com.example.springjpalab.application.service.RestaurantService
-import com.example.springjpalab.domain.model.Dish
-import com.example.springjpalab.domain.model.Restaurant
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
-import kotlin.text.toDouble
 
 @RestController
 @Validated
@@ -33,125 +30,69 @@ class RestaurantController(
 ) {
     @GetMapping
     fun getAllRestaurants(): ResponseEntity<Any> {
-        val restList = restaurantService.findAll()
-        return ResponseEntity.ok(
-            restList.map { r ->
-                RestaurantResponse(
-                    id = r.id,
-                    name = r.name,
-                    address = r.address
-                )
-            }
-        )
+        return ResponseEntity.ok(restaurantService.findAll().map { it.toResponse() })
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     fun createRestaurant(@Valid @RequestBody request: RestaurantCreateRequest): ResponseEntity<Any>
    {
-        val rest = Restaurant(
-            id = 0,
+        val saved = restaurantService.createRestaurant(
             name = request.name,
-            address = request.address,
-            dishes = emptyList(),
+            address = request.address
         )
-        val saved = restaurantService.create(rest)
-
-        return ResponseEntity.status(201).body(
-            RestaurantResponse(
-                id = saved.id,
-                name = saved.name,
-                address = saved.address
-            )
-        )
+        return ResponseEntity.status(201).body(saved.toResponse())
     }
 
 
     @GetMapping("/{id}")
     fun getRestaurantById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Any> {
-        val rest = requireNotNull(restaurantService.findById(id))
-        return ResponseEntity.ok(
-            RestaurantResponse(
-                id = rest.id,
-                name = rest.name,
-                address = rest.address
-            )
-        )
+        return ResponseEntity.ok(restaurantService.findById(id).toResponse())
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     fun updateUserById(
         @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody(required = true) request: RestaurantUpdateRequest
     ): ResponseEntity<Any> {
-        val existingRest = requireNotNull(restaurantService.findById(id))
-        val updatedRestEntity = existingRest.copy(
+        val updatedRest = restaurantService.updateRestaurant(
+            id = id,
             name = request.name,
             address = request.address
         )
-        val updatedRest = restaurantService.update(id, updatedRestEntity)
 
-        return ResponseEntity.ok(
-            RestaurantResponse(
-                id = updatedRest.id,
-                name = updatedRest.name,
-                address = updatedRest.address
-            )
-        )
+        return ResponseEntity.ok(updatedRest.toResponse())
     }
 
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     fun deleteUserById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Any> {
-        val existingRest = requireNotNull(restaurantService.findById(id))
-        restaurantService.delete(existingRest.id)
+        restaurantService.delete(id)
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/{id}/dishes")
     fun getDishes(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Any> {
-        val restaurant = restaurantService.findById(id)!!
-
-        val dishesResponse = restaurant.dishes.map { dish ->
-            DishResponse(
-                id = dish.id,
-                name = dish.name,
-                description = dish.description,
-                price = dish.price,
-                isAvailable = dish.isAvailable,
-                restaurantId = restaurant.id
-            )
-        }
-
-        return ResponseEntity.ok(dishesResponse)
+        return ResponseEntity.ok(restaurantService.getRestaurantDishes(id).map { it.toResponse() })
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/dishes")
     fun addDishToRestaurant(
         @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody request: DishCreateRequest
-    ): ResponseEntity<DishResponse> {
-
-        restaurantService.findById(id)
-
-        val dish = Dish(
-            id = 0,
+    ): ResponseEntity<Any> {
+        val saved = dishService.createInRestaurant(
+            restaurantId = id,
             name = request.name,
             description = request.description,
             price = BigDecimal.valueOf(request.price.toDouble()),
-            isAvailable = request.isAvailable,
-            restaurantId = id
+            isAvailable = request.isAvailable
         )
 
-        val saved = dishService.create(dish)
-
-        return ResponseEntity.status(201).body(
-            DishResponse(
-                id = saved.id,
-                name = saved.name,
-                description = saved.description,
-                price = saved.price,
-                isAvailable = saved.isAvailable,
-                restaurantId = saved.restaurantId
-            )
-        )
+        return ResponseEntity.status(201).body(saved.toResponse())
     }
 
 

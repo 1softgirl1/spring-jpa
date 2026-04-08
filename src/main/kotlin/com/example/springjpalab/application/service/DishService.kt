@@ -8,11 +8,13 @@ import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 
 @Service
 class DishService(
     private val repository: DishRepositoryPort,
-    private val orderService: OrderService
+    private val orderService: OrderService,
+    private val restaurantService: RestaurantService
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -21,6 +23,14 @@ class DishService(
 
     fun findByNamePart(namePart: String):  List<Dish?>?  =
         repository.findByNamePart(namePart)
+
+    fun getDishes(namePart: String?): List<Dish> {
+        return if (namePart.isNullOrBlank()) {
+            findAll()
+        } else {
+            findByNamePart(namePart).orEmpty().filterNotNull()
+        }
+    }
 
     fun findAll(): List<Dish> {
         return repository.findAll()
@@ -43,6 +53,27 @@ class DishService(
         return saved
     }
 
+    fun createInRestaurant(
+        restaurantId: Long,
+        name: String,
+        description: String,
+        price: BigDecimal,
+        isAvailable: Boolean
+    ): Dish {
+        restaurantService.findById(restaurantId)
+
+        return create(
+            Dish(
+                id = 0,
+                name = name,
+                description = description,
+                price = price,
+                isAvailable = isAvailable,
+                restaurantId = restaurantId
+            )
+        )
+    }
+
     fun update(id: Long, dish: Dish): Dish {
         repository.findById(id) ?: run {
             logger.warn { "Блюдо с id=$id не найдено" }
@@ -53,6 +84,25 @@ class DishService(
         val saved = repository.update(updated)
         logger.info { "Обновлено блюдо: id=${saved.id}, name=${saved.name}" }
         return saved
+    }
+
+    fun updateDish(
+        id: Long,
+        name: String,
+        description: String,
+        price: BigDecimal,
+        isAvailable: Boolean
+    ): Dish {
+        val existing = findById(id)
+        return update(
+            id,
+            existing.copy(
+                name = name,
+                description = description,
+                price = price,
+                isAvailable = isAvailable
+            )
+        )
     }
 
     fun delete(id: Long) {

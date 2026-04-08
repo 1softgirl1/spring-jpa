@@ -3,6 +3,7 @@ import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
 import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
 import com.example.springjpalab.application.service.DishService
 import com.example.springjpalab.application.service.OrderService
+import com.example.springjpalab.application.service.RestaurantService
 import io.mockk.impl.annotations.InjectMockKs
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
@@ -30,6 +31,9 @@ class DishServiceTest {
 
     @MockK
     lateinit var repository: DishRepositoryPort
+
+    @MockK
+    lateinit var restaurantService: RestaurantService
 
     @InjectMockKs
     lateinit var service: DishService

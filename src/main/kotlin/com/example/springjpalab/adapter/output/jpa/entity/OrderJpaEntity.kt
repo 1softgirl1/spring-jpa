@@ -1,7 +1,6 @@
 package com.example.springjpalab.adapter.output.jpa.entity
 
 import com.example.springjpalab.domain.model.Order
-import com.example.springjpalab.domain.model.Restaurant
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -24,7 +23,7 @@ class OrderJpaEntity(
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    val user: UserJpaEntity = UserJpaEntity(),
+    val user: UserJpaEntity,
 
     @ManyToMany(cascade = [CascadeType.ALL])
     @JoinTable(
@@ -36,6 +35,10 @@ class OrderJpaEntity(
 
 
 ) {
+
+    // JPA requires a no-arg constructor for entity instantiation via reflection.
+    protected constructor() : this(user = UserJpaEntity(passwordHash = ""))
+    
 
     fun toDomain(): Order {
         return Order(
