@@ -1,0 +1,41 @@
+spring:
+
+  application:
+    name: spring-jpa-lab
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  profiles:
+    active: db
+
+
+  flyway:
+    # Flyway включен по умолчанию, но можно указать явно
+    enabled: true
+    # Если БД не пустая, но таблицы flyway_schema_history нет,
+    # baseline-on-migrate позволит начать версионирование
+    baseline-on-migrate: true
+    # Можно явным образом указать путь до директории с миграциями
+    locations:
+      - classpath:/db/migration
+
+  config:
+    import: optional:file:.env[.properties]
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION:86400000}  # 24 часа по умолчанию

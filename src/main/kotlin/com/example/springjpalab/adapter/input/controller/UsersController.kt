@@ -1,146 +1,402 @@
 package com.example.springjpalab.adapter.input.controller
 
-import com.example.springjpalab.adapter.input.dto.ErrorResponse
-import com.example.springjpalab.adapter.input.dto.UserCreateRequest
-import com.example.springjpalab.adapter.input.dto.UserResponse
-import com.example.springjpalab.adapter.input.dto.UserUpdateRequest
+import com.example.springjpalab.adapter.input.dto.error.ErrorResponse
+import com.example.springjpalab.adapter.input.dto.error.ValidationErrorResponse
+import com.example.springjpalab.adapter.input.dto.restaurant.RestaurantResponse
+import com.example.springjpalab.adapter.input.dto.user.UserResponse
+import com.example.springjpalab.adapter.input.dto.user.UserUpdateRequest
+import com.example.springjpalab.adapter.input.mapper.toResponse
 import com.example.springjpalab.application.service.UserService
-import com.example.springjpalab.domain.model.User
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
+import jakarta.validation.constraints.Min
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Validated
+@Tag(name = "Users", description = "Управление пользователями")
 @RequestMapping("/api/v1/users")
 class UsersController (
     private val userService: UserService
 ) {
+    @Operation(summary = "Получить всех пользователей")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Пользователи найдены",
+                content = [
+                    Content(
+                        array = ArraySchema(schema = Schema(implementation = UserResponse::class))
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Не аутентифицирован (отсутствует или невалидный токен)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """{
+                                    "status": 401,
+                                    "message": "Требуется аутентификация",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещён (недостаточно прав)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """{
+                                    "status": 403,
+                                    "message": "Доступ запрещён",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+        ]
+    )
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    fun getAllUsers(): ResponseEntity<Any> {
-        val usersList = userService.findAll()
-        return ResponseEntity.ok(usersList)
+    fun getAllUsers(): ResponseEntity<List<UserResponse>>  {
+        return ResponseEntity.ok(userService.getAllUsers().map { it.toResponse() })
     }
 
-    @PostMapping
-    fun createUser(@Valid @RequestBody request: UserCreateRequest): ResponseEntity<UserResponse> {
-
-        val existingUser = userService.findByEmail(request.email)
-
-        return if (existingUser != null) {
-            ResponseEntity.ok(
-                UserResponse(
-                    id = existingUser.id,
-                    email = existingUser.email,
-                    firstName = existingUser.firstName,
-                    lastName = existingUser.lastName,
-                    active = existingUser.isActive
-                )
+    @Operation(summary = "Получить пользователя по ID")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Пользователь найден",
+                content = [
+                    Content(
+                        schema = Schema(implementation = UserResponse::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Не аутентифицирован (отсутствует или невалидный токен)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """{
+                                    "status": 401,
+                                    "message": "Требуется аутентификация",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещён (недостаточно прав)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """{
+                                    "status": 403,
+                                    "message": "Доступ запрещён",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Validation parameters error",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ValidationErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Constraint violation",
+                                value = """{
+                                    "status": 400,
+                                    "message": "Constraint violation",
+                                    "errors": {
+                                        "id": "must be greater than or equal to 1"
+                                    },
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Пользователь не найден",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "User not found",
+                                value = """{
+                                    "status": 404,
+                                    "message": "Пользователь с id=1 не найден",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
             )
-        } else {
-            val user = User(
-                id = 0,
-                email = request.email,
-                firstName = request.firstName,
-                lastName = request.lastName,
-                isActive = request.active
-            )
-            val saved = userService.create(user)
-
-            ResponseEntity.status(201).body(
-                UserResponse(
-                    id = saved.id,
-                    email = saved.email,
-                    firstName = saved.firstName,
-                    lastName = saved.lastName,
-                    active = saved.isActive
-                )
-            )
-        }
-    }
-
-
+        ]
+    )
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    fun getUserById(@PathVariable(required = true) id: Long): ResponseEntity<Any> {
+    fun getUserById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<UserResponse> {
         val user = userService.findById(id)
-
-        if (user != null) {
-            return ResponseEntity.ok(UserResponse(id,
-                user.email,
-                user.firstName,
-                user.lastName,
-                user.isActive))
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "User with id=${id} not found"
-                )
-            )
-        }
+        return ResponseEntity.ok(user.toResponse())
 
     }
 
+    @Operation(summary = "Обновить пользователя")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "Пользователь обновлён",
+                content = [Content(schema = Schema(implementation = UserResponse::class))]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Пользователь не найден",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "User not found",
+                                value = """{
+                                    "status": 404,
+                                    "message": "Пользователь с id=1 не найден",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Ошибка валидации данных",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ValidationErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Validation error",
+                                value = """{
+                                    "status": 400,
+                                    "message": "Method parameter validation error",
+                                    "errors": {
+                                        "email": "Email must be valid",
+                                        "firstName": "First name cannot be blank",
+                                        "lastName": "First name cannot be blank",
+                                        "role": "Role cannot be blank"
+                                    },
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Не аутентифицирован (отсутствует или невалидный токен)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """{
+                                    "status": 401,
+                                    "message": "Требуется аутентификация",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещён (недостаточно прав)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """{
+                                    "status": 403,
+                                    "message": "Доступ запрещён",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     fun updateUserById(
-        @PathVariable(required = true) id: Long,
+        @PathVariable(required = true) @Min(1) id: Long,
         @Valid @RequestBody(required = true) request: UserUpdateRequest
-    ): ResponseEntity<Any> {
-        val existingUser = userService.findById(id)
-        return if (existingUser != null) {
-            val updatedUserEntity = existingUser.copy(
-                email = request.email,
-                firstName = request.firstName,
-                lastName = request.lastName,
-                isActive = request.active
-            )
-            val updatedUser = userService.update(id, updatedUserEntity)
+    ): ResponseEntity<UserResponse> {
+        val updatedUser = userService.updateUserData(
+            id = id,
+            email = request.email,
+            firstName = request.firstName,
+            lastName = request.lastName,
+            isActive = request.isActive
+        )
 
-            ResponseEntity.ok(
-                UserResponse(
-                    updatedUser.id,
-                    updatedUser.email,
-                    updatedUser.firstName,
-                    updatedUser.lastName,
-                    updatedUser.isActive
-                )
-            )
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "User with id=${id} not found"
-                )
-            )
-
-        }
+        return ResponseEntity.ok(updatedUser.toResponse())
     }
-    @DeleteMapping("/{id}")
-    fun deleteUserById(@PathVariable(required = true) id: Long): ResponseEntity<Any> {
-        val existingUser = userService.findById(id)
-        return if (existingUser != null) {
-            userService.delete(existingUser.id)
-            ResponseEntity.noContent().build()
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse(
-                    404,
-                    "Not Found",
-                    "User with id=${id} not found"
-                )
+
+    @Operation(summary = "Удалить пользователя")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "204",
+                description = "Пользователь удалён",
+                content = [Content()]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Validation parameters error",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ValidationErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Constraint violation",
+                                value = """{
+                                    "status": 400,
+                                    "message": "Constraint violation",
+                                    "errors": {
+                                        "id": "must be greater than or equal to 1"
+                                    },
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Пользователь не найден",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "User not found",
+                                value = """{
+                                    "status": 404,
+                                    "message": "Пользователь с id=1 не найден",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "401",
+                description = "Не аутентифицирован (отсутствует или невалидный токен)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Unauthorized",
+                                value = """{
+                                    "status": 401,
+                                    "message": "Требуется аутентификация",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "403",
+                description = "Доступ запрещён (недостаточно прав)",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ErrorResponse::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Forbidden",
+                                value = """{
+                                    "status": 403,
+                                    "message": "Доступ запрещён",
+                                    "timestamp": "2026-04-17T10:30:00"
+                                }"""
+                            )
+                        ]
+                    )
+                ]
             )
-        }
+        ]
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    fun deleteUserById(@PathVariable(required = true) @Min(1) id: Long): ResponseEntity<Void> {
+        userService.deleteUserById(id)
+        return ResponseEntity.noContent().build()
 
     }
 

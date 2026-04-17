@@ -1,0 +1,23 @@
+info:
+  name: get_orders
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/orders?status=CONFIRMED"
+  params:
+    - name: userId
+      value: "2"
+      type: query
+      disabled: true
+    - name: status
+      value: CONFIRMED
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
