@@ -20,7 +20,7 @@ spring:
         web-allow-others: true
 
   profiles:
-    active: test
+    active: db
 
 
   flyway:

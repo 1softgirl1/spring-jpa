@@ -2,10 +2,7 @@ name: Spring boot CI
 
 on:
   pull_request:
-    branches:
-      - master
-      - main
-      - lab6
+    branches: [ master ]
 
 jobs:
   check-tasks:

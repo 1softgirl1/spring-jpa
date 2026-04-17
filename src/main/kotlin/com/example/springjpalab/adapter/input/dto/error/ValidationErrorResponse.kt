@@ -1,5 +1,4 @@
 package com.example.springjpalab.adapter.input.dto.error
-
 import java.time.LocalDateTime
 
 class ValidationErrorResponse(

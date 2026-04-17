@@ -62,7 +62,13 @@ class SecurityConfig(
             it.requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/restaurants/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/dishes/**").permitAll()
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .anyRequest().authenticated()
+
         }
 
         http.addFilterBefore(

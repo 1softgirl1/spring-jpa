@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
 class RestaurantCreateRequest (
+
     @field:NotBlank(message = "Name cannot be blank")
     @field:Size(min = 1, message = "Name must be at least 1 character")
     val name: String,
