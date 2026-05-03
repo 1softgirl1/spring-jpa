@@ -3,7 +3,7 @@ name: Spring boot CD
 
 on:
   push:
-    branches: [ lab8 ]
+    branches: [ lab9 ]
 
 jobs:
   build-and-push:
