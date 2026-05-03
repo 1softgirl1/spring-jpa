@@ -11,6 +11,7 @@ import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Role
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -26,6 +27,8 @@ class AuthService (
     private val authenticationManager: AuthenticationManager
 ) {
     private val logger = KotlinLogging.logger {}
+
+    @CacheEvict(cacheNames = ["users"], allEntries = true)
     fun register(@RequestBody @Valid request: RegisterRequest): AuthResponse {
         if (userRepository.existsByEmail(request.email)) {
             throw AlreadyExistsException("Пользователь с email ${request.email} уже существует")

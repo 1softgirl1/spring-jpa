@@ -90,7 +90,7 @@ class UsersController (
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     fun getAllUsers(): ResponseEntity<List<UserResponse>>  {
-        return ResponseEntity.ok(userService.getAllUsers().map { it.toResponse() })
+        return ResponseEntity.ok(userService.findAll().map { it.toResponse() })
     }
 
     @Operation(summary = "Получить пользователя по ID")

@@ -5,6 +5,9 @@ import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.port.UserRepositoryPort
 import com.example.springjpalab.domain.model.User
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
@@ -14,6 +17,7 @@ class UserService(
 
     private val logger = KotlinLogging.logger {}
 
+    @CacheEvict(cacheNames = ["users"], allEntries = true)
     fun create(user: User): User {
         val existing = repository.findByEmail(user.email)
         if (existing != null) {
@@ -27,6 +31,7 @@ class UserService(
         return saved
     }
 
+    @CacheEvict(cacheNames = ["users"], allEntries = true)
     fun update(id: Long, user: User): User {
         repository.findById(id) ?: run {
             logger.warn { "Пользователь с id=$id не найден" }
@@ -39,21 +44,28 @@ class UserService(
         return saved
     }
 
-    fun findById(id: Long): User =
-        repository.findById(id) ?: run {
+    @Cacheable(cacheNames = ["users"], key = "#id")
+    fun findById(id: Long): User {
+        logger.info { "Cache miss for users.byId id=$id: loading from repository" }
+        return repository.findById(id) ?: run {
             logger.warn { "Пользователь с id=$id не найден" }
             throw NotFoundException("Пользователь с id=$id не найден")
         }
+    }
 
-    fun findByEmail(email: String): User? =
-        repository.findByEmail(email)
+    @Cacheable(cacheNames = ["users"], key = "#email")
+    fun findByEmail(email: String): User? {
+        logger.info { "Cache miss for users.byEmail email='$email': loading from repository" }
+        return repository.findByEmail(email)
+    }
 
-    fun findAll(): List<User> =
-        repository.findAll()
+    @Cacheable(cacheNames = ["users"])
+    fun findAll(): List<User> {
+        logger.info { "Cache miss for users.findAll: loading from repository" }
+        return repository.findAll()
+    }
 
-    fun getAllUsers(): List<User> =
-        findAll()
-
+    @CachePut(cacheNames = ["users"], key = "#id")
     fun updateUserData(
         id: Long,
         email: String,
@@ -73,6 +85,7 @@ class UserService(
         )
     }
 
+    @CacheEvict(cacheNames = ["users"], allEntries = true)
     fun delete(id: Long) {
         repository.findById(id) ?: run {
             logger.warn { "Пользователь с id=$id не найден" }
@@ -82,6 +95,7 @@ class UserService(
         logger.info { "Удален пользователь: id=$id" }
     }
 
+    @CacheEvict(cacheNames = ["users"], allEntries = true)
     fun deleteUserById(id: Long) {
         delete(id)
     }

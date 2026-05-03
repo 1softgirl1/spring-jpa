@@ -1,4 +1,4 @@
-package com.example.springjpalab.application.service
+﻿package com.example.springjpalab.application.service
 
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
@@ -6,29 +6,36 @@ import com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.model.Restaurant
 import com.example.springjpalab.domain.port.RestaurantRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
-class RestaurantService (
+class RestaurantService(
     private val repository: RestaurantRepositoryPort
 ) {
     private val logger = KotlinLogging.logger {}
 
+    @Cacheable(cacheNames = ["restaurants"])
     fun findAll(): List<Restaurant> =
         repository.findAll()
 
+    @Cacheable(cacheNames = ["restaurants"], key = "#id")
     fun findById(id: Long): Restaurant =
         repository.findById(id) ?: run {
             logger.warn { "Ресторан с id=$id не найден" }
             throw NotFoundException("Ресторан с id=$id не найден")
         }
 
+    @Cacheable(cacheNames = ["restaurants"], key = "'byName:' + #name")
     fun findByName(name: String): Restaurant =
         repository.findByName(name) ?: run {
             logger.warn { "Ресторан с name=$name не найден" }
             throw NotFoundException("Ресторан с name=$name не найден")
         }
 
+    @CacheEvict(cacheNames = ["restaurants"], allEntries = true)
     fun create(restaurant: Restaurant): Restaurant {
         val existing = repository.findByName(restaurant.name)
         if (existing != null) {
@@ -42,6 +49,7 @@ class RestaurantService (
         return saved
     }
 
+    @CacheEvict(cacheNames = ["restaurants"], allEntries = true)
     fun createRestaurant(name: String, address: String): Restaurant =
         create(
             Restaurant(
@@ -52,8 +60,8 @@ class RestaurantService (
             )
         )
 
+    @CachePut(cacheNames = ["restaurants"], key = "#id")
     fun update(id: Long, restaurant: Restaurant): Restaurant {
-
         val toUpdate = restaurant.copy(id = id)
         val updated = repository.update(toUpdate)
         if (updated == null) {
@@ -78,6 +86,7 @@ class RestaurantService (
     fun getRestaurantDishes(id: Long): List<Dish> =
         findById(id).dishes
 
+    @CacheEvict(cacheNames = ["restaurants"], allEntries = true)
     fun delete(id: Long) {
         val deleted = repository.deleteById(id)
         if (!deleted) {
@@ -86,5 +95,4 @@ class RestaurantService (
         }
         logger.info { "Удален ресторан: id=$id" }
     }
-
 }
