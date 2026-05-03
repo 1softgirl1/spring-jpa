@@ -4,6 +4,8 @@ spring:
     url: jdbc:tc:postgresql:17:///testdb
     username: user
     password: pass
+  cache:
+    type: redis
   jpa:
     hibernate:
       ddl-auto: validate

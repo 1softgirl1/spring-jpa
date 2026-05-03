@@ -46,7 +46,7 @@ class UserService(
 
     @Cacheable(cacheNames = ["users"], key = "#id")
     fun findById(id: Long): User {
-        logger.info { "Cache miss for users.byId id=$id: loading from repository" }
+        logger.info { "Промах кэша users.byId для id=$id: загружаем из репозитория" }
         return repository.findById(id) ?: run {
             logger.warn { "Пользователь с id=$id не найден" }
             throw NotFoundException("Пользователь с id=$id не найден")
@@ -55,13 +55,13 @@ class UserService(
 
     @Cacheable(cacheNames = ["users"], key = "#email")
     fun findByEmail(email: String): User? {
-        logger.info { "Cache miss for users.byEmail email='$email': loading from repository" }
+        logger.info { "Промах кэша users.byEmail для email='$email': загружаем из репозитория" }
         return repository.findByEmail(email)
     }
 
     @Cacheable(cacheNames = ["users"])
     fun findAll(): List<User> {
-        logger.info { "Cache miss for users.findAll: loading from repository" }
+        logger.info { "Промах кэша users.findAll: загружаем из репозитория" }
         return repository.findAll()
     }
 

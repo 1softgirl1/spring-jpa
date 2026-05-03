@@ -24,13 +24,13 @@ class DishService(
 
     @Cacheable(cacheNames = ["dishes"], key = "'byName:' + #name")
     fun findByName(name: String): Dish? {
-        logger.info { "Cache miss for dishes.byName name='$name': loading from repository" }
+        logger.info { "Промах кэша dishes.byName для name='$name': загружаем из репозитория" }
         return repository.findByName(name)
     }
 
     @Cacheable(cacheNames = ["dishes"], key = "'byNamePart:' + #namePart")
     fun findByNamePart(namePart: String): List<Dish?>? {
-        logger.info { "Cache miss for dishes.byNamePart namePart='$namePart': loading from repository" }
+        logger.info { "Промах кэша dishes.byNamePart для namePart='$namePart': загружаем из репозитория" }
         return repository.findByNamePart(namePart)
     }
 
@@ -45,13 +45,13 @@ class DishService(
 
     @Cacheable(cacheNames = ["dishes"])
     fun findAll(): List<Dish> {
-        logger.info { "Cache miss for dishes.findAll: loading from repository" }
+        logger.info { "Промах кэша dishes.findAll: загружаем из репозитория" }
         return repository.findAll()
     }
 
     @Cacheable(cacheNames = ["dishes"], key = "#id")
     fun findById(id: Long): Dish {
-        logger.info { "Cache miss for dishes.byId id=$id: loading from repository" }
+        logger.info { "Промах кэша dishes.byId для id=$id: загружаем из репозитория" }
         return repository.findById(id) ?: run {
             logger.warn { "Блюдо с id=$id не найдено" }
             throw NotFoundException("Блюдо с id=$id не найдено")
@@ -74,6 +74,10 @@ class DishService(
     }
 
     @Deprecated("Use create(Dish)")
+    @Caching(evict = [
+        CacheEvict(cacheNames = ["dishes"], allEntries = true),
+        CacheEvict(cacheNames = ["restaurants"], allEntries = true)
+    ])
     fun createInRestaurant(
         restaurantId: Long,
         name: String,
@@ -112,6 +116,10 @@ class DishService(
     }
 
     @Deprecated("Use update(Dish)")
+    @Caching(evict = [
+        CacheEvict(cacheNames = ["dishes"], allEntries = true),
+        CacheEvict(cacheNames = ["restaurants"], allEntries = true)
+    ])
     fun updateDish(
         id: Long,
         name: String,

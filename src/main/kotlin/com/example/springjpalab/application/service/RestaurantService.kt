@@ -18,22 +18,28 @@ class RestaurantService(
     private val logger = KotlinLogging.logger {}
 
     @Cacheable(cacheNames = ["restaurants"])
-    fun findAll(): List<Restaurant> =
-        repository.findAll()
+    fun findAll(): List<Restaurant> {
+        logger.info { "Промах кэша restaurants.findAll: загружаем из репозитория" }
+        return repository.findAll()
+    }
 
     @Cacheable(cacheNames = ["restaurants"], key = "#id")
-    fun findById(id: Long): Restaurant =
-        repository.findById(id) ?: run {
+    fun findById(id: Long): Restaurant {
+        logger.info { "Промах кэша restaurants.findById для id=$id: загружаем из репозитория" }
+        return repository.findById(id) ?: run {
             logger.warn { "Ресторан с id=$id не найден" }
             throw NotFoundException("Ресторан с id=$id не найден")
         }
+    }
 
     @Cacheable(cacheNames = ["restaurants"], key = "'byName:' + #name")
-    fun findByName(name: String): Restaurant =
-        repository.findByName(name) ?: run {
+    fun findByName(name: String): Restaurant {
+        logger.info { "Промах кэша restaurants.findByName для name=$name: загружаем из репозитория" }
+        return repository.findByName(name) ?: run {
             logger.warn { "Ресторан с name=$name не найден" }
             throw NotFoundException("Ресторан с name=$name не найден")
         }
+    }
 
     @CacheEvict(cacheNames = ["restaurants"], allEntries = true)
     fun create(restaurant: Restaurant): Restaurant {
@@ -72,6 +78,7 @@ class RestaurantService(
         return updated
     }
 
+    @CachePut(cacheNames = ["restaurants"], key = "#id")
     fun updateRestaurant(id: Long, name: String, address: String): Restaurant {
         val existing = findById(id)
         return update(
