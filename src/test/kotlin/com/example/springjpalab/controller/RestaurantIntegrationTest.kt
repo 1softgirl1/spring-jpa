@@ -13,6 +13,8 @@ import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.testSecurityContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.testcontainers.containers.GenericContainer
 
 
 @SpringBootTest
@@ -39,6 +42,18 @@ class RestaurantIntegrationTest {
             withDatabaseName("integration-tests-db")
             withUsername("test")
             withPassword("test")
+        }
+
+        @Container
+        @JvmStatic
+        val redis = GenericContainer("redis:7-alpine")
+            .withExposedPorts(6379)
+
+        @DynamicPropertySource
+        @JvmStatic
+        fun redisProperties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.data.redis.host") { redis.host }
+            registry.add("spring.data.redis.port") { redis.firstMappedPort }
         }
     }
 
