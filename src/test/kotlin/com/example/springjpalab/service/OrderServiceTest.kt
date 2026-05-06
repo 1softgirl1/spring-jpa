@@ -1,8 +1,12 @@
 package com.example.springjpalab.service
 import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.application.service.NotificationService
 import com.example.springjpalab.application.service.OrderService
+import com.example.springjpalab.application.service.UserService
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.Role
+import com.example.springjpalab.domain.model.User
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.port.OrderRepositoryPort
 import io.mockk.*
@@ -24,14 +28,30 @@ class OrderServiceTest {
     @MockK
     lateinit var dishRepository: DishRepositoryPort
 
+    @MockK(relaxed = true)
+    lateinit var notificationService: NotificationService
+
+    @MockK
+    lateinit var userService: UserService
+
     @InjectMockKs
     lateinit var service: OrderService
 
     private val sampleOrder = Order(id = 1L, status = OrderStatus.PENDING, createdAt = LocalDateTime.now(), userId = 0, dishes = emptyList())
+    private val sampleUser = User(
+        id = 0L,
+        email = "user@example.com",
+        firstName = "Test",
+        lastName = "User",
+        isActive = true,
+        hashedPassword = "hash",
+        role = Role.USER
+    )
 
     @BeforeEach
     fun setUp() {
         clearAllMocks()
+        every { userService.findById(any()) } returns sampleUser
     }
 
     @Test
