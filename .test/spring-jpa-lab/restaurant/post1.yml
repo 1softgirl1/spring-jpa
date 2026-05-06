@@ -1,0 +1,24 @@
+info:
+  name: post1
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/restaurants"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Мусс",
+        "address": "ул. Весенняя, д. 10"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWRhMUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzc3ODAyNDg1LCJleHAiOjE3Nzc4ODg4ODV9.q5S1Fa24dTlVsOQBxlgQhCnicPmd9fN7BOkkVDLP8-4
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

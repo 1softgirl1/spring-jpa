@@ -1,11 +1,11 @@
 info:
   name: get2
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: GET
-  url: "{{baseUrl}}/dishes/2"
+  url: "{{baseUrl}}/dishes"
   auth: inherit
 
 settings:
