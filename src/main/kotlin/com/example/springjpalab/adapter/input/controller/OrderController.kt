@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @Validated
 class OrderController (
     private val orderService: OrderService,
-    private val userService: UserService
+    private val userService: UserService,
 ){
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping
@@ -85,7 +85,6 @@ class OrderController (
             id,
             order.copy(status = request.status)
         )
-
         return ResponseEntity.ok(updatedOrder.toResponse())
     }
 

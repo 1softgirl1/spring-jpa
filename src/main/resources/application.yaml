@@ -44,6 +44,19 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  orders:
+    preparing-timeout: 30m
+    scheduler-cron: "0 */5 * * * *"
 
 jwt:
   secret: ${JWT_SECRET}

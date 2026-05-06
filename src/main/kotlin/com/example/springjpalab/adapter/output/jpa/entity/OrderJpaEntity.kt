@@ -16,7 +16,7 @@ class OrderJpaEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val status: OrderStatus = OrderStatus.PENDING,
+    var status: OrderStatus = OrderStatus.PENDING,
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),

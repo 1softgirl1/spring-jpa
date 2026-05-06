@@ -7,6 +7,7 @@ import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.port.OrderRepositoryPort
+import com.example.springjpalab.domain.port.UserRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
@@ -15,8 +16,11 @@ import java.time.LocalDateTime
 @Service
 class OrderService (
     private val repository: OrderRepositoryPort,
-    private val dishRepository: DishRepositoryPort
-) {
+    private val dishRepository: DishRepositoryPort,
+    private val notificationService: NotificationService,
+    private val userService: UserService
+
+    ) {
     private val logger = KotlinLogging.logger {}
 
     fun findAll(): List<Order> =
@@ -90,6 +94,7 @@ class OrderService (
         logger.info { "Создан заказ: id=${saved.id}, userId=${saved.userId}, status=${saved.status}" }
         return saved
     }
+
     fun update(id: Long, order: Order): Order {
         val existing = repository.findById(id) ?: run {
             logger.warn { "Заказ с id=$id не найден" }
@@ -110,6 +115,17 @@ class OrderService (
 
         val updOrd = order.copy(id = id)
         val saved = repository.update(updOrd)
+
+        if (currentStatus != newStatus){
+            val orderId = saved.id
+            val userId = saved.userId
+            val user = userService.findById(userId)
+            notificationService.sendOrderStatusUpdate(
+                to = user.email,
+                orderId = orderId,
+                status = newStatus.name
+            )
+        }
         logger.info { "Обновлен заказ: id=${saved.id}, status=${saved.status}" }
         return saved
     }

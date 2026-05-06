@@ -10,10 +10,12 @@ http:
     type: json
     data: |-
       {
-        "name": "Садж",
+        "name": "Мусс",
         "address": "ул. Весенняя, д. 10"
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWRhMUBleGFtcGxlLmNvbSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzc3ODAyNDg1LCJleHAiOjE3Nzc4ODg4ODV9.q5S1Fa24dTlVsOQBxlgQhCnicPmd9fN7BOkkVDLP8-4
 
 settings:
   encodeUrl: true
