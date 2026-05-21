@@ -1,0 +1,24 @@
+info:
+  name: post_dish
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/restaurants/3/dishes"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "macaroni",
+        "description": "Вкусная macaron",
+        "price": 100,
+        "isAvailable": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
