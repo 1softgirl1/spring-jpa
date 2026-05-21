@@ -3,7 +3,7 @@ package com.example.springjpalab.adapter.input.controller
 import com.example.springjpalab.adapter.input.dto.order.OrderCreateRequest
 import com.example.springjpalab.adapter.input.dto.order.OrderStatusUpdateRequest
 import com.example.springjpalab.adapter.input.mapper.toResponse
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
 import com.example.springjpalab.domain.model.User

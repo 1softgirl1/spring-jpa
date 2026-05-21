@@ -1,6 +1,6 @@
 package com.example.springjpalab.application.scheduler
 
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.adapter.output.jpa.repository.OrderJpaRepository
 import com.example.springjpalab.application.service.NotificationService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -45,3 +45,4 @@ class OrderScheduler(
         }
     }
 }
+

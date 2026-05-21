@@ -1,11 +1,11 @@
 package com.example.springjpalab.adapter.output.jpa.adapter
 
 import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.adapter.output.jpa.repository.DishJpaRepository
 import com.example.springjpalab.adapter.output.jpa.repository.OrderJpaRepository
 import com.example.springjpalab.adapter.output.jpa.repository.UserJpaRepository
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.domain.port.OrderRepositoryPort
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -26,10 +26,6 @@ class OrderJpaAdapter (
         val entity = repository.findById(id).orElse(null)
         return entity?.toDomain()
     }
-    override fun findEntityById(id: Long): OrderJpaEntity? =
-        repository.findById(id).orElse(null)
-
-
     override fun findByUserId(userId: Long): List<Order> =
         repository.findByUserId(userId).map { it.toDomain() }
 
@@ -38,6 +34,9 @@ class OrderJpaAdapter (
 
     override fun findByUserIdAndStatus(userId: Long, status: OrderStatus): List<Order> =
         repository.findByUserIdAndStatus(userId, status).map { it.toDomain() }
+
+    override fun findByDishId(dishId: Long): List<Order> =
+        repository.findByDishesId(dishId).map { it.toDomain() }
 
 
 

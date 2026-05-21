@@ -1,5 +1,5 @@
 package com.example.springjpalab.service
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.application.service.NotificationService
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
@@ -172,3 +172,4 @@ class OrderServiceTest {
 
 
 }
+

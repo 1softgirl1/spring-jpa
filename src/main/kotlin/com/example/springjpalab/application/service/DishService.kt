@@ -1,7 +1,5 @@
 package com.example.springjpalab.application.service
 
-import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
-import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Dish
@@ -144,18 +142,19 @@ class DishService(
         CacheEvict(cacheNames = ["restaurants"], allEntries = true)
     ])
     fun delete(id: Long) {
-        val dishEntity: DishJpaEntity = repository.findEntityById(id)
+        repository.findById(id)
             ?: run {
                 logger.warn { "Блюдо с id=$id не найдено" }
                 throw NotFoundException("Блюдо с id=$id не найдено")
             }
 
-        val ordersToUpdate: List<OrderJpaEntity> = dishEntity.orders.toList()
-        for (orderJpa in ordersToUpdate) {
-            orderJpa.dishes.remove(dishEntity)
-            orderService.update(orderJpa.id, orderJpa.toDomain())
+        val ordersToUpdate = orderService.findByDishId(id)
+        for (order in ordersToUpdate) {
+            orderService.update(
+                order.id,
+                order.copy(dishes = order.dishes.filterNot { it.id == id })
+            )
         }
-
         repository.deleteById(id)
         logger.info { "Удалено блюдо: id=$id" }
     }

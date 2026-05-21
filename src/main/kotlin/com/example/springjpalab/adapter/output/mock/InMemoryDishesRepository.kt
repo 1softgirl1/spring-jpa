@@ -1,6 +1,5 @@
 package com.example.springjpalab.adapter.output.mock
 
-import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.model.Dish
 import org.springframework.context.annotation.Profile
@@ -45,10 +44,6 @@ class InMemoryDishesRepository: DishRepositoryPort {
     override fun deleteById(id: Long): Boolean {
         dishes.remove(id)
         return true
-    }
-
-    override fun findEntityById(id: Long): DishJpaEntity? {
-        return null
     }
 
     override fun findByNameAndRestaurantId(name: String, restaurantId: Long): Dish? {

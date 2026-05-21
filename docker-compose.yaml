@@ -26,6 +26,10 @@ services:
       SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-1025}
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
 
 
     depends_on:
@@ -35,6 +39,8 @@ services:
         condition: service_healthy
       mailhog:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     ports:
       - ${SERVER_PORT}:8080
 
@@ -64,7 +70,23 @@ services:
     ports:
       - "1025:1025"   # SMTP
       - "8025:8025"   # Web UI
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    # AMQP — подключение приложения
+      - "15672:15672"  # Management UI — браузер
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:
   redis_data:
+  rabbitmq_data:

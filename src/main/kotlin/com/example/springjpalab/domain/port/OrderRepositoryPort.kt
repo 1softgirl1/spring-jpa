@@ -1,8 +1,7 @@
 package com.example.springjpalab.domain.port
 
-import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.OrderStatus
 
 
 interface OrderRepositoryPort {
@@ -11,7 +10,7 @@ interface OrderRepositoryPort {
     fun findByUserId(userId: Long): List<Order>
     fun findByStatus(status: OrderStatus): List<Order>
     fun findByUserIdAndStatus(userId: Long, status: OrderStatus): List<Order>
-    fun findEntityById(id: Long): OrderJpaEntity?
+    fun findByDishId(dishId: Long): List<Order>
     fun create(order: Order): Order
     fun update(order: Order): Order
 }

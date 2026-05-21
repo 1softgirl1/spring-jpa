@@ -1,6 +1,4 @@
 package com.example.springjpalab.service
-import com.example.springjpalab.adapter.output.jpa.entity.DishJpaEntity
-import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
 import com.example.springjpalab.application.service.DishService
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.RestaurantService
@@ -8,6 +6,8 @@ import io.mockk.impl.annotations.InjectMockKs
 import com.example.springjpalab.domain.exception.AlreadyExistsException
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Dish
+import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import io.mockk.*
 import io.mockk.junit5.MockKExtension
@@ -20,7 +20,7 @@ import io.mockk.impl.annotations.MockK
 
 import kotlinx.coroutines.test.runTest
 
-import kotlin.test.assertFalse
+import java.time.LocalDateTime
 
 
 @ExtendWith(MockKExtension::class)
@@ -175,43 +175,40 @@ class DishServiceTest {
     }
 
     @Test
-    fun `delete успешно удаляет блюдо и обновляет заказы`() = runTest {
-        val dishEntity = mockk<DishJpaEntity>(relaxed = true)
-        val orderEntity = mockk<OrderJpaEntity>(relaxed = true)
+    fun `delete updates related orders and deletes dish`() = runTest {
+        val order = Order(
+            id = 10L,
+            status = OrderStatus.PENDING,
+            createdAt = LocalDateTime.now(),
+            userId = 0,
+            dishes = listOf(sampleDish)
+        )
 
-        val dishesList = mutableListOf(dishEntity)
-
-        every { repository.findEntityById(1L) } returns dishEntity
-        every { dishEntity.orders } returns mutableListOf(orderEntity)
-
-        every { orderEntity.dishes } returns dishesList
-        every { orderEntity.id } returns 10L
-        every { orderEntity.toDomain() } returns mockk()
-
-        coEvery { orderService.update(10L, any()) } returns mockk()
-
+        every { repository.findById(1L) } returns sampleDish
+        every { orderService.findByDishId(1L) } returns listOf(order)
+        every { orderService.update(10L, any()) } returns order.copy(dishes = emptyList())
         every { repository.deleteById(any()) } returns true
 
         service.delete(1L)
 
-        assertFalse(dishesList.contains(dishEntity))
-
-        verify { repository.findEntityById(1L) }
-        coVerify { orderService.update(10L, any()) }
+        verify { repository.findById(1L) }
+        verify { orderService.findByDishId(1L) }
+        verify { orderService.update(10L, match { it.dishes.isEmpty() }) }
         verify { repository.deleteById(1L) }
     }
 
     @Test
-    fun `delete бросает NotFoundException если блюдо не найдено`() {
-        every { repository.findEntityById(999L) } returns null
+    fun `delete throws NotFoundException when dish is missing`() {
+        every { repository.findById(999L) } returns null
 
         assertThrows<NotFoundException> {
             service.delete(999L)
         }
 
-        verify { repository.findEntityById(999L) }
+        verify { repository.findById(999L) }
         verify(exactly = 0) { repository.deleteById(any()) }
-        coVerify(exactly = 0) { orderService.update(any(), any()) }
+        verify(exactly = 0) { orderService.findByDishId(any()) }
+        verify(exactly = 0) { orderService.update(any(), any()) }
     }
 
 

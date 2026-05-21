@@ -1,4 +1,4 @@
-package com.example.springjpalab.adapter.output.jpa.entity
+package com.example.springjpalab.domain.model
 
 enum class OrderStatus {
     PENDING,

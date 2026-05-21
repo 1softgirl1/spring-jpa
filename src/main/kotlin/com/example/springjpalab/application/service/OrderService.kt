@@ -1,24 +1,26 @@
 package com.example.springjpalab.application.service
 
-import com.example.springjpalab.adapter.output.jpa.entity.OrderJpaEntity
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.adapter.output.rabbit.OrderEventPublisher
+import com.example.springjpalab.domain.event.OrderCreatedEvent
+import com.example.springjpalab.domain.event.OrderStatusChangedEvent
 import com.example.springjpalab.domain.exception.InvalidOrderStateException
 import com.example.springjpalab.domain.exception.NotFoundException
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.OrderStatus
 import com.example.springjpalab.domain.port.DishRepositoryPort
 import com.example.springjpalab.domain.port.OrderRepositoryPort
-import com.example.springjpalab.domain.port.UserRepositoryPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class OrderService (
     private val repository: OrderRepositoryPort,
     private val dishRepository: DishRepositoryPort,
-    private val notificationService: NotificationService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val eventPublisher: OrderEventPublisher
 
     ) {
     private val logger = KotlinLogging.logger {}
@@ -42,6 +44,9 @@ class OrderService (
 
     fun findByUserIdAndStatus(userId: Long, status: OrderStatus): List<Order> =
         repository.findByUserIdAndStatus(userId, status)
+
+    fun findByDishId(dishId: Long): List<Order> =
+        repository.findByDishId(dishId)
 
     fun getOrdersForRequester(
         requestedUserId: Long?,
@@ -88,13 +93,26 @@ class OrderService (
         return order
     }
 
+    @Transactional
     fun create(order: Order): Order {
         val newOrd = order.copy(id = 0)
         val saved = repository.create(newOrd)
+        val user = userService.findById(saved.userId)
+
+        eventPublisher.publishOrderCreated(
+            OrderCreatedEvent(
+                orderId = saved.id,
+                userId = saved.userId,
+                dishIds = saved.dishes.map { it.id },
+                userEmail = user.email,
+                createdAt = saved.createdAt
+            )
+        )
         logger.info { "Создан заказ: id=${saved.id}, userId=${saved.userId}, status=${saved.status}" }
         return saved
     }
 
+    @Transactional
     fun update(id: Long, order: Order): Order {
         val existing = repository.findById(id) ?: run {
             logger.warn { "Заказ с id=$id не найден" }
@@ -120,18 +138,18 @@ class OrderService (
             val orderId = saved.id
             val userId = saved.userId
             val user = userService.findById(userId)
-            notificationService.sendOrderStatusUpdate(
-                to = user.email,
-                orderId = orderId,
-                status = newStatus.name
+
+            eventPublisher.publishOrderStatusChanged(
+                OrderStatusChangedEvent(
+                    orderId = orderId,
+                    userId = saved.userId,
+                    userEmail = user.email,
+                    oldStatus = currentStatus,
+                    newStatus =newStatus,
+                )
             )
         }
         logger.info { "Обновлен заказ: id=${saved.id}, status=${saved.status}" }
         return saved
     }
-    fun findEntityById(id: Long): OrderJpaEntity? {
-        return repository.findEntityById(id)
-            ?: throw NotFoundException("Заказ с id=$id не найден")
-    }
-
 }

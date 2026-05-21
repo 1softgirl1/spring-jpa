@@ -1,6 +1,7 @@
 package com.example.springjpalab.adapter.output.jpa.entity
 
 import com.example.springjpalab.domain.model.Order
+import com.example.springjpalab.domain.model.OrderStatus
 import jakarta.persistence.*
 import java.time.LocalDateTime
 

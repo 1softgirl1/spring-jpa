@@ -1,6 +1,6 @@
 package com.example.springjpalab.adapter.input.dto.order
 
-import com.example.springjpalab.adapter.output.jpa.entity.OrderStatus
+import com.example.springjpalab.domain.model.OrderStatus
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank

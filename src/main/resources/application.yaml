@@ -58,6 +58,15 @@ spring:
     preparing-timeout: 30m
     scheduler-cron: "0 */5 * * * *"
 
+  rabbitmq:
+    listener:
+      simple:
+        acknowledge-mode: manual
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASS:guest}
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION:86400000}  # 24 часа по умолчанию
