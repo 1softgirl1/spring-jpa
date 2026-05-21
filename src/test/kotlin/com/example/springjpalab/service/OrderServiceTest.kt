@@ -1,6 +1,6 @@
 package com.example.springjpalab.service
 import com.example.springjpalab.domain.model.OrderStatus
-import com.example.springjpalab.application.service.NotificationService
+import com.example.springjpalab.adapter.output.rabbit.OrderEventPublisher
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
 import com.example.springjpalab.domain.exception.NotFoundException
@@ -29,7 +29,7 @@ class OrderServiceTest {
     lateinit var dishRepository: DishRepositoryPort
 
     @MockK(relaxed = true)
-    lateinit var notificationService: NotificationService
+    lateinit var eventPublisher: OrderEventPublisher
 
     @MockK
     lateinit var userService: UserService
