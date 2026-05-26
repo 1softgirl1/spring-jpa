@@ -1,0 +1,17 @@
+info:
+  name: get_order_by_id
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{baseUrl}}/orders/7"
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWRhMUBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3OTM3MzgxOSwiZXhwIjoxNzc5NDYwMjE5fQ.fxrG8NO8alE_Re5S2ewhngryZ_fu0cF2v-xJ_hoJ6aA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

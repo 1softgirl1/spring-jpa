@@ -1,0 +1,22 @@
+info:
+  name: upd_rest
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/restaurants/1"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "string",
+        "address": "string"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
