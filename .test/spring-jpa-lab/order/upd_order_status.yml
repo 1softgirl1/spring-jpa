@@ -5,14 +5,16 @@ info:
 
 http:
   method: PATCH
-  url: "{{baseUrl}}/orders/2/status"
+  url: "{{baseUrl}}/orders/5/status"
   body:
     type: json
     data: |-
       {
-        "status": "CONFIRMED"
+        "status": "DELIVERED"
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWRhMUBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3OTM3MzgxOSwiZXhwIjoxNzc5NDYwMjE5fQ.fxrG8NO8alE_Re5S2ewhngryZ_fu0cF2v-xJ_hoJ6aA
 
 settings:
   encodeUrl: true

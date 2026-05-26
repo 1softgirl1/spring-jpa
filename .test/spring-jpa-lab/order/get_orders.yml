@@ -5,16 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/orders?status=CONFIRMED"
-  params:
-    - name: userId
-      value: "2"
-      type: query
-      disabled: true
-    - name: status
-      value: CONFIRMED
-      type: query
-  auth: inherit
+  url: "{{baseUrl}}/orders"
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJsaWRhMUBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc3OTM3MzgxOSwiZXhwIjoxNzc5NDYwMjE5fQ.fxrG8NO8alE_Re5S2ewhngryZ_fu0cF2v-xJ_hoJ6aA
 
 settings:
   encodeUrl: true

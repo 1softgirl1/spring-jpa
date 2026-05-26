@@ -63,6 +63,12 @@ class SecurityConfig(
                 .requestMatchers(HttpMethod.GET, "/api/v1/restaurants/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/dishes/**").permitAll()
                 .requestMatchers(
+                    "/actuator/health",
+                    "/actuator/info",
+                    "/actuator/prometheus",
+                    "/actuator/metrics/**"
+                ).permitAll()
+                .requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**"

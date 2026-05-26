@@ -1,6 +1,7 @@
 package com.example.springjpalab.application.service
 
 import com.example.springjpalab.adapter.output.rabbit.OrderEventPublisher
+import com.example.springjpalab.application.metrics.OrderMetrics
 import com.example.springjpalab.domain.event.OrderCreatedEvent
 import com.example.springjpalab.domain.event.OrderStatusChangedEvent
 import com.example.springjpalab.domain.exception.InvalidOrderStateException
@@ -20,7 +21,8 @@ class OrderService (
     private val repository: OrderRepositoryPort,
     private val dishRepository: DishRepositoryPort,
     private val userService: UserService,
-    private val eventPublisher: OrderEventPublisher
+    private val eventPublisher: OrderEventPublisher,
+    private val metrics: OrderMetrics
 
     ) {
     private val logger = KotlinLogging.logger {}
@@ -94,23 +96,29 @@ class OrderService (
     }
 
     @Transactional
-    fun create(order: Order): Order {
-        val newOrd = order.copy(id = 0)
-        val saved = repository.create(newOrd)
-        val user = userService.findById(saved.userId)
+    fun create(order: Order): Order =
+        metrics.processingDuration.recordCallable {
+            if (order.dishes.isEmpty()) {
+                metrics.recordBusinessError("validation")
+                throw IllegalArgumentException("Список блюд не может быть пустым")
+            }
 
-        eventPublisher.publishOrderCreated(
-            OrderCreatedEvent(
-                orderId = saved.id,
-                userId = saved.userId,
-                dishIds = saved.dishes.map { it.id },
-                userEmail = user.email,
-                createdAt = saved.createdAt
+            val saved = repository.create(order)
+            val user = userService.findById(saved.userId)
+            metrics.ordersCreated.increment()
+
+            eventPublisher.publishOrderCreated(
+                OrderCreatedEvent(
+                    orderId = saved.id,
+                    userId = saved.userId,
+                    dishIds = saved.dishes.map { it.id },
+                    userEmail = user.email,
+                    createdAt = saved.createdAt
+                )
             )
-        )
-        logger.info { "Создан заказ: id=${saved.id}, userId=${saved.userId}, status=${saved.status}" }
-        return saved
-    }
+            logger.info { "Создан заказ: id=${saved.id}, userId=${saved.userId}, status=${saved.status}" }
+            saved
+        } ?: throw IllegalStateException("Timer returned null unexpectedly")
 
     @Transactional
     fun update(id: Long, order: Order): Order {
