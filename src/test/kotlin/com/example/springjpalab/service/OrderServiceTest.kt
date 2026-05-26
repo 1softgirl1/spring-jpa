@@ -1,9 +1,9 @@
 package com.example.springjpalab.service
 import com.example.springjpalab.domain.model.OrderStatus
-import com.example.springjpalab.adapter.output.rabbit.OrderEventPublisher
+import com.example.springjpalab.adapter.output.rabbit.OrderEventPublisher`r`nimport com.example.springjpalab.application.metrics.OrderMetrics
 import com.example.springjpalab.application.service.OrderService
 import com.example.springjpalab.application.service.UserService
-import com.example.springjpalab.domain.exception.NotFoundException
+import com.example.springjpalab.domain.exception.NotFoundException`r`nimport com.example.springjpalab.domain.model.Dish
 import com.example.springjpalab.domain.model.Order
 import com.example.springjpalab.domain.model.Role
 import com.example.springjpalab.domain.model.User
@@ -12,11 +12,11 @@ import com.example.springjpalab.domain.port.OrderRepositoryPort
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
+import io.mockk.junit5.MockKExtension`r`nimport io.micrometer.core.instrument.Counter`r`nimport io.micrometer.core.instrument.Timer
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtendWith`r`nimport java.math.BigDecimal`r`nimport java.util.concurrent.Callable
 import java.time.LocalDateTime
 import kotlin.test.Test
 
@@ -51,7 +51,7 @@ class OrderServiceTest {
     @BeforeEach
     fun setUp() {
         clearAllMocks()
-        every { userService.findById(any()) } returns sampleUser
+        every { userService.findById(any()) } returns sampleUser`r`n        every { metrics.processingDuration } returns processingDuration`r`n        every { metrics.ordersCreated } returns ordersCreated`r`n        every { processingDuration.recordCallable<Order>(any()) } answers { firstArg<Callable<Order>>().call() }
     }
 
     @Test
@@ -127,7 +127,7 @@ class OrderServiceTest {
 
     @Test
     fun `create успешно создает новый заказ`() {
-        val newOrder = Order(id = 0, status = OrderStatus.PENDING, createdAt = LocalDateTime.now(), userId = 1, dishes = emptyList())
+        val dish = Dish(id = 10L, name = "Test dish", description = "Test dish description", price = BigDecimal("10.00"), isAvailable = true, restaurantId = 1L)`r`n        val newOrder = Order(id = 0, status = OrderStatus.PENDING, createdAt = LocalDateTime.now(), userId = 1, dishes = listOf(dish))
         val savedOrder = newOrder.copy(id = 2L)
         every { repository.create(newOrder) } returns savedOrder
 
@@ -172,4 +172,5 @@ class OrderServiceTest {
 
 
 }
+
 
